@@ -21,6 +21,7 @@ import androidx.annotation.NonNull;
 
 import com.amazonaws.logging.Log;
 import com.amazonaws.logging.LogFactory;
+import java.util.concurrent.Executors;
 import software.aws.solution.clickstream.client.db.ClickstreamDBUtil;
 import software.aws.solution.clickstream.client.db.EventTable;
 import software.aws.solution.clickstream.client.network.NetRequest;
@@ -101,6 +102,7 @@ public class EventRecorder {
             }
         } else {
             LOG.error(String.format("Error to save event with EventType: %s", event.getEventType()));
+            sendEventImmediately(event);
         }
         return uri;
     }
@@ -206,6 +208,18 @@ public class EventRecorder {
         } while (cursor.moveToNext());
 
         return new String[] {eventBuilder.toString(), lastEventId};
+    }
+
+    public void sendEventImmediately(AnalyticsEvent event) {
+        Runnable task = () -> {
+            NetRequest.uploadEvents("[" + event.toJSONObject().toString() + "]",
+                clickstreamContext.getClickstreamConfiguration(),
+                bundleSequenceId);
+            bundleSequenceId += 1;
+            clickstreamContext.getSystem().getPreferences()
+                .putInt(KEY_BUNDLE_SEQUENCE_ID_PREF, bundleSequenceId);
+        };
+        Executors.newSingleThreadExecutor().execute(task);
     }
 }
 

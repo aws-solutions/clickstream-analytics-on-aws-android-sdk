@@ -18,9 +18,13 @@ package software.aws.solution.clickstream.client.db;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.net.Uri;
 
+import com.amazonaws.logging.Log;
+import com.amazonaws.logging.LogFactory;
 import software.aws.solution.clickstream.client.AnalyticsEvent;
+import software.aws.solution.clickstream.client.EventRecorder;
 
 /**
  * Clickstream Database Util.
@@ -30,6 +34,8 @@ public class ClickstreamDBUtil {
      * ClickstreamDBBase is a basic helper for accessing the database.
      */
     private ClickstreamDBBase clickstreamDBBase;
+
+    private static final Log LOG = LogFactory.getLog(EventRecorder.class);
 
     /**
      * Constructs a ClickstreamDBUtil with the given Context.
@@ -58,7 +64,13 @@ public class ClickstreamDBUtil {
      * @return An Uri of the record inserted.
      */
     public Uri saveEvent(final AnalyticsEvent event) {
-        return clickstreamDBBase.insert(clickstreamDBBase.getContentUri(), generateContentValuesFromEvent(event));
+        Uri uri = null;
+        try {
+            uri = clickstreamDBBase.insert(clickstreamDBBase.getContentUri(), generateContentValuesFromEvent(event));
+        } catch (SQLException e) {
+            LOG.info("SQLException: " + e.getMessage());
+        }
+        return uri;
     }
 
     private ContentValues generateContentValuesFromEvent(final AnalyticsEvent event) {
