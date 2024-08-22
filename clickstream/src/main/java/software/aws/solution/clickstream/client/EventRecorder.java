@@ -21,7 +21,6 @@ import androidx.annotation.NonNull;
 
 import com.amazonaws.logging.Log;
 import com.amazonaws.logging.LogFactory;
-import java.util.concurrent.Executors;
 import software.aws.solution.clickstream.client.db.ClickstreamDBUtil;
 import software.aws.solution.clickstream.client.db.EventTable;
 import software.aws.solution.clickstream.client.network.NetRequest;
@@ -30,6 +29,7 @@ import software.aws.solution.clickstream.client.util.StringUtil;
 
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -210,6 +210,10 @@ public class EventRecorder {
         return new String[] {eventBuilder.toString(), lastEventId};
     }
 
+    /**
+     * Method for send event immediately when event saved fail.
+     * @param event AnalyticsEvent
+     */
     public void sendEventImmediately(AnalyticsEvent event) {
         Runnable task = () -> {
             NetRequest.uploadEvents("[" + event.toJSONObject().toString() + "]",

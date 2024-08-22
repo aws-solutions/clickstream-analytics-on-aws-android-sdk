@@ -30,12 +30,12 @@ import software.aws.solution.clickstream.client.EventRecorder;
  * Clickstream Database Util.
  */
 public class ClickstreamDBUtil {
+    private static final Log LOG = LogFactory.getLog(EventRecorder.class);
+
     /**
      * ClickstreamDBBase is a basic helper for accessing the database.
      */
     private ClickstreamDBBase clickstreamDBBase;
-
-    private static final Log LOG = LogFactory.getLog(EventRecorder.class);
 
     /**
      * Constructs a ClickstreamDBUtil with the given Context.
@@ -67,8 +67,8 @@ public class ClickstreamDBUtil {
         Uri uri = null;
         try {
             uri = clickstreamDBBase.insert(clickstreamDBBase.getContentUri(), generateContentValuesFromEvent(event));
-        } catch (SQLException e) {
-            LOG.info("SQLException: " + e.getMessage());
+        } catch (SQLException error) {
+            LOG.info("SQLException: " + error.getMessage());
         }
         return uri;
     }
