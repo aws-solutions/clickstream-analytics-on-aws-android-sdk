@@ -15,7 +15,9 @@
 
 package software.aws.solution.clickstream.db;
 
+import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.net.Uri;
 import androidx.test.core.app.ApplicationProvider;
 
@@ -28,13 +30,19 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import software.aws.solution.clickstream.AnalyticsEventTest;
 import software.aws.solution.clickstream.client.AnalyticsEvent;
+import software.aws.solution.clickstream.client.db.ClickstreamDBBase;
 import software.aws.solution.clickstream.client.db.ClickstreamDBUtil;
+import software.aws.solution.clickstream.util.ReflectUtil;
 
 import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE, sdk = 26)
@@ -61,6 +69,21 @@ public class DBUtilTest {
         Uri uri = dbUtil.saveEvent(analyticsEvent);
         int idInserted = Integer.parseInt(Objects.requireNonNull(uri.getLastPathSegment()));
         assertNotEquals(idInserted, 0);
+    }
+
+    /**
+     * test insert single event failed.
+     *
+     * @throws Exception exception.
+     */
+    @Test
+    public void testInsertSingleEventFailed() throws Exception {
+        ClickstreamDBBase clickstreamDBBase = mock(ClickstreamDBBase.class);
+        ReflectUtil.modifyFiled(dbUtil, "clickstreamDBBase", clickstreamDBBase);
+        doThrow(new SQLException("Mocked SQLException")).when(clickstreamDBBase).insert(any(Uri.class), any(
+            ContentValues.class));
+        Uri uri = dbUtil.saveEvent(analyticsEvent);
+        assertNull(uri);
     }
 
     /**
