@@ -29,6 +29,7 @@ import software.aws.solution.clickstream.client.util.StringUtil;
 
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -101,6 +102,7 @@ public class EventRecorder {
             }
         } else {
             LOG.error(String.format("Error to save event with EventType: %s", event.getEventType()));
+            sendEventImmediately(event);
         }
         return uri;
     }
@@ -206,6 +208,22 @@ public class EventRecorder {
         } while (cursor.moveToNext());
 
         return new String[] {eventBuilder.toString(), lastEventId};
+    }
+
+    /**
+     * Method for send event immediately when event saved fail.
+     * @param event AnalyticsEvent
+     */
+    public void sendEventImmediately(AnalyticsEvent event) {
+        Runnable task = () -> {
+            NetRequest.uploadEvents("[" + event.toJSONObject().toString() + "]",
+                clickstreamContext.getClickstreamConfiguration(),
+                bundleSequenceId);
+            bundleSequenceId += 1;
+            clickstreamContext.getSystem().getPreferences()
+                .putInt(KEY_BUNDLE_SEQUENCE_ID_PREF, bundleSequenceId);
+        };
+        Executors.newSingleThreadExecutor().execute(task);
     }
 }
 

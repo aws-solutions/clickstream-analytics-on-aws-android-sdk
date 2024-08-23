@@ -69,6 +69,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -565,6 +566,23 @@ public class EventRecorderTest {
             .response(status(200), text("success"));
         boolean requestResult = NetRequest.uploadEvents("[]", clickstreamContext.getClickstreamConfiguration(), 1);
         assertTrue(requestResult);
+    }
+
+    /**
+     * test save event failed and send event immediately.
+     *
+     * @throws Exception exception.
+     */
+    @Test
+    public void testSaveEventFailedAndWillSendEventImmediately() throws Exception {
+        dbUtil = mock(ClickstreamDBUtil.class);
+        ReflectUtil.modifyFiled(eventRecorder, "dbUtil", dbUtil);
+        when(dbUtil.saveEvent(event)).thenReturn(null);
+        eventRecorder.recordEvent(event);
+        verify(log).error("Error to save event with EventType: testEvent");
+        Thread.sleep(1500);
+        int bundleSequenceId = (int) ReflectUtil.getFiled(eventRecorder, "bundleSequenceId");
+        assertTrue(bundleSequenceId > 1);
     }
 
     /**
