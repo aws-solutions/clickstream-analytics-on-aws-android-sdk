@@ -68,7 +68,7 @@ public class ClickstreamDBUtil {
         try {
             uri = clickstreamDBBase.insert(clickstreamDBBase.getContentUri(), generateContentValuesFromEvent(event));
         } catch (SQLException error) {
-            LOG.info("SQLException: " + error.getMessage());
+            LOG.warn("SQLException: " + error.getMessage());
         }
         return uri;
     }
