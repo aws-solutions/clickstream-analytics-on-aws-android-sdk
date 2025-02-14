@@ -19,13 +19,15 @@ import android.content.Context;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 
+import java.io.Serializable;
+
 /**
  * Android System.
  */
-public class AndroidSystem {
+public class AndroidSystem implements Serializable {
     // UUID to identify a unique shared preferences and directory the library
     // can use, will be concatenated with the package to ensure no collision.
-    private final String preferencesKeySuffix = "294262d4-8dbd-4bfd-816d-0fc81b3d32b7";
+    private final String preferencesKeySuffix = "294262d4-8dbd-4bfd-816d-0fc81b3d32b7"; // NOSONAR
     private final AndroidPreferences preferences;
     private final AndroidConnectivity connectivity;
     private final AndroidAppDetails appDetails;

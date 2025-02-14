@@ -93,7 +93,7 @@ public final class NetRequest {
         String endpoint = configuration.getEndpoint();
         String curStr = eventJson;
         String compression = "";
-        if (configuration.isCompressEvents()) {
+        if (Boolean.TRUE.equals(configuration.isCompressEvents())) {
             LOG.debug("submitEvents isCompressEvents true");
             curStr = StringUtil.compressForGzip(eventJson);
             compression = "gzip";

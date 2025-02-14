@@ -13,15 +13,11 @@
  * permissions and limitations under the License.
  */
 
-apply plugin: 'maven'
 apply plugin: 'signing'
 apply plugin: 'maven-publish'
 
 version = project.ext.VERSION_NAME
 group = POM_GROUP
-def keyFile = rootProject.file("key.properties")
-def keyProp = new Properties()
-keyFile.exists() ? keyProp.load(keyFile.newInputStream()) : keyProp
 
 afterEvaluate { project ->
     publishing {
@@ -80,21 +76,15 @@ afterEvaluate { project ->
         repositories {
             maven {
                 url = "https://aws.oss.sonatype.org/service/local/staging/deploy/maven2/"
-                credentials {
-                    username = keyProp.getProperty("ossrhUsername")
-                    password = keyProp.getProperty("ossrhPassword")
+                credentials (PasswordCredentials){
+                    username=ossrhUsername
+                    password=ossrhPassword
                 }
             }
         }
     }
 
     signing {
-        if (keyFile.exists()) {
-            def signingPassword = keyProp.getProperty("signing.password")
-            def keyId = keyProp.getProperty("signing.keyId")
-            def signingKey = keyProp.getProperty("signing.inMemoryKey").replace("\\n", "\n")
-            useInMemoryPgpKeys(keyId, signingKey, signingPassword)
-            sign publishing.publications.library
-        }
+        sign publishing.publications.library
     }
 }

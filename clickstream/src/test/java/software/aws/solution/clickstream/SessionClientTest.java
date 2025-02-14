@@ -67,9 +67,9 @@ public class SessionClientTest {
     @Test
     public void testExecuteStart() throws Exception {
         boolean isNewSession = client.initialSession();
-        Session session = (Session) ReflectUtil.getFiled(client, "session");
+        Session session = (Session) ReflectUtil.getField(client, "session");
         Assert.assertNotNull(session);
-        Session clientSession = (Session) ReflectUtil.getFiled(analyticsClient, "session");
+        Session clientSession = (Session) ReflectUtil.getField(analyticsClient, "session");
         Assert.assertNotNull(clientSession);
         Assert.assertTrue(isNewSession);
     }
@@ -82,11 +82,11 @@ public class SessionClientTest {
     @Test
     public void testExecuteStartAndStore() throws Exception {
         client.initialSession();
-        Session session = (Session) ReflectUtil.getFiled(client, "session");
+        Session session = (Session) ReflectUtil.getField(client, "session");
         Assert.assertTrue(session.isNewSession());
 
         client.storeSession();
-        Session storedSession = (Session) ReflectUtil.getFiled(client, "session");
+        Session storedSession = (Session) ReflectUtil.getField(client, "session");
         Assert.assertFalse(storedSession.isNewSession());
     }
 
@@ -99,16 +99,16 @@ public class SessionClientTest {
     @Test
     public void testExecuteStartTwiceWithoutSessionTimeout() throws Exception {
         client.initialSession();
-        Session session = (Session) ReflectUtil.getFiled(client, "session");
+        Session session = (Session) ReflectUtil.getField(client, "session");
         Assert.assertTrue(session.isNewSession());
         Assert.assertEquals(1, session.getSessionIndex());
 
         client.storeSession();
-        Session storedSession = (Session) ReflectUtil.getFiled(client, "session");
+        Session storedSession = (Session) ReflectUtil.getField(client, "session");
         Assert.assertFalse(storedSession.isNewSession());
 
         client.initialSession();
-        Session newSession = (Session) ReflectUtil.getFiled(client, "session");
+        Session newSession = (Session) ReflectUtil.getField(client, "session");
 
         Assert.assertFalse(newSession.isNewSession());
         Assert.assertEquals(session.getSessionID(), newSession.getSessionID());
@@ -125,17 +125,17 @@ public class SessionClientTest {
     @Test
     public void testExecuteStartTwiceWithSessionTimeout() throws Exception {
         client.initialSession();
-        Session session = (Session) ReflectUtil.getFiled(client, "session");
+        Session session = (Session) ReflectUtil.getField(client, "session");
         Assert.assertTrue(session.isNewSession());
         Assert.assertEquals(1, session.getSessionIndex());
 
         client.storeSession();
-        Session storedSession = (Session) ReflectUtil.getFiled(client, "session");
+        Session storedSession = (Session) ReflectUtil.getField(client, "session");
         Assert.assertFalse(storedSession.isNewSession());
 
         clickstreamContext.getClickstreamConfiguration().withSessionTimeoutDuration(0);
         client.initialSession();
-        Session newSession = (Session) ReflectUtil.getFiled(client, "session");
+        Session newSession = (Session) ReflectUtil.getField(client, "session");
 
         Assert.assertTrue(newSession.isNewSession());
         Assert.assertNotEquals(session.getSessionID(), newSession.getSessionID());

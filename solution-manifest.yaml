@@ -1,0 +1,6 @@
+id: SO0321
+name: clickstream-analytics-on-aws-android-sdk
+version: v1.0.0
+cloudformation_templates: []
+build_environment:
+  build_image: 'aws/codebuild/standard:7.0'

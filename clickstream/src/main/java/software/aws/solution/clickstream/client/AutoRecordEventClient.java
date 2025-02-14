@@ -84,9 +84,11 @@ public class AutoRecordEventClient {
      * @param activity the activity to record.
      */
     public void recordViewScreenAutomatically(Activity activity) {
-        if (!clickstreamContext.getClickstreamConfiguration().isTrackScreenViewEvents()) {
+        Boolean isTrackScreenViewEvents = clickstreamContext.getClickstreamConfiguration().isTrackScreenViewEvents();
+        if (Boolean.FALSE.equals(isTrackScreenViewEvents)) {
             return;
         }
+
         String screenId = activity.getClass().getCanonicalName();
         String screenName = activity.getClass().getSimpleName();
         String screenUniqueId = getScreenUniqueId(activity);
@@ -173,8 +175,9 @@ public class AutoRecordEventClient {
             return;
         }
         lastEngageTime = System.currentTimeMillis() - startEngageTimestamp;
-        if (clickstreamContext.getClickstreamConfiguration().isTrackUserEngagementEvents() &&
-            lastEngageTime > MIN_ENGAGEMENT_TIME) {
+        Boolean isTrackUserEngagementEvents = clickstreamContext
+                .getClickstreamConfiguration().isTrackUserEngagementEvents();
+        if (Boolean.TRUE.equals(isTrackUserEngagementEvents) && lastEngageTime > MIN_ENGAGEMENT_TIME) {
             final AnalyticsEvent event =
                 this.clickstreamContext.getAnalyticsClient().createEvent(Event.PresetEvent.USER_ENGAGEMENT);
             event.addAttribute(Event.ReservedAttribute.ENGAGEMENT_TIMESTAMP, lastEngageTime);
@@ -208,7 +211,7 @@ public class AutoRecordEventClient {
      * check and record _app_update event.
      */
     private void checkAppVersionUpdate() {
-        String previousAppVersion = preferences.getString("appVersion", "");
+        String previousAppVersion = preferences.getString("appVersion", ""); //NOSONAR
         if (!StringUtil.isNullOrEmpty(previousAppVersion)) {
             String currentVersion = clickstreamContext.getSystem().getAppDetails().versionName();
             if (!currentVersion.equals(previousAppVersion)) {
@@ -216,10 +219,10 @@ public class AutoRecordEventClient {
                     this.clickstreamContext.getAnalyticsClient().createEvent(Event.PresetEvent.APP_UPDATE);
                 event.addAttribute(Event.ReservedAttribute.PREVIOUS_APP_VERSION, previousAppVersion);
                 this.clickstreamContext.getAnalyticsClient().recordEvent(event);
-                preferences.putString("appVersion", currentVersion);
+                preferences.putString("appVersion", currentVersion); //NOSONAR
             }
         } else {
-            preferences.putString("appVersion", clickstreamContext.getSystem().getAppDetails().versionName());
+            preferences.putString("appVersion", clickstreamContext.getSystem().getAppDetails().versionName()); //NOSONAR
         }
     }
 
@@ -227,7 +230,7 @@ public class AutoRecordEventClient {
      * check and record _os_update event.
      */
     private void checkOSVersionUpdate() {
-        String previousOSVersion = preferences.getString("osVersion", "");
+        String previousOSVersion = preferences.getString("osVersion", ""); //NOSONAR
         if (!StringUtil.isNullOrEmpty(previousOSVersion)) {
             String currentOSVersion = clickstreamContext.getSystem().getDeviceDetails().platformVersion();
             if (!currentOSVersion.equals(previousOSVersion)) {
@@ -235,10 +238,13 @@ public class AutoRecordEventClient {
                     this.clickstreamContext.getAnalyticsClient().createEvent(Event.PresetEvent.OS_UPDATE);
                 event.addAttribute(Event.ReservedAttribute.PREVIOUS_OS_VERSION, previousOSVersion);
                 this.clickstreamContext.getAnalyticsClient().recordEvent(event);
-                preferences.putString("osVersion", currentOSVersion);
+                preferences.putString("osVersion", currentOSVersion); //NOSONAR
             }
         } else {
-            preferences.putString("osVersion", clickstreamContext.getSystem().getDeviceDetails().platformVersion());
+            preferences.putString(
+                    "osVersion",
+                    clickstreamContext.getSystem().getDeviceDetails().platformVersion()
+            ); //NOSONAR
         }
     }
 

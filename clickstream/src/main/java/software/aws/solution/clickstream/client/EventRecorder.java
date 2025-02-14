@@ -27,6 +27,7 @@ import software.aws.solution.clickstream.client.network.NetRequest;
 import software.aws.solution.clickstream.client.network.NetUtil;
 import software.aws.solution.clickstream.client.util.StringUtil;
 
+import java.io.Serializable;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,14 +38,14 @@ import java.util.concurrent.TimeUnit;
 /**
  * Event Recorder.
  */
-public class EventRecorder {
+public class EventRecorder implements Serializable {
     static final String KEY_BUNDLE_SEQUENCE_ID_PREF = "event_bundle_sequence_id";
 
     private static final int DEFAULT_MAX_SUBMISSIONS_ALLOWED = 3;
     private static final int MAX_EVENT_OPERATIONS = 1000;
     private static final int QUERY_OLDEST_EVENT_LIMIT = 5;
-    private static final long DEFAULT_MAX_SUBMISSION_SIZE = 512 * 1024;
-    private static final long DEFAULT_MAX_DB_SIZE = 50 * 1024 * 1024;
+    private static final long DEFAULT_MAX_SUBMISSION_SIZE = 512 * 1024L;
+    private static final long DEFAULT_MAX_DB_SIZE = 50 * 1024 * 1024L;
     private static final Log LOG = LogFactory.getLog(EventRecorder.class);
 
     private static final int JSON_COLUMN_INDEX = EventTable.ColumnIndex.JSON.getValue();
@@ -53,7 +54,7 @@ public class EventRecorder {
 
     private final ClickstreamContext clickstreamContext;
     private final ClickstreamDBUtil dbUtil;
-    private final ExecutorService submissionRunnableQueue;
+    private final ExecutorService submissionRunnableQueue; //NOSONAR
     private int bundleSequenceId;
 
     EventRecorder(final ClickstreamContext clickstreamContext, final ClickstreamDBUtil dbUtil,
@@ -72,11 +73,11 @@ public class EventRecorder {
      */
     public static EventRecorder newInstance(final ClickstreamContext clickstreamContext) {
         final ExecutorService submissionRunnableQueue =
-            new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(MAX_EVENT_OPERATIONS),
-                new ThreadPoolExecutor.DiscardPolicy());
+                new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(MAX_EVENT_OPERATIONS),
+                        new ThreadPoolExecutor.DiscardPolicy());
         return new EventRecorder(clickstreamContext,
-            new ClickstreamDBUtil(clickstreamContext.getApplicationContext().getApplicationContext()),
-            submissionRunnableQueue);
+                new ClickstreamDBUtil(clickstreamContext.getApplicationContext().getApplicationContext()),
+                submissionRunnableQueue);
     }
 
     /**
@@ -89,7 +90,7 @@ public class EventRecorder {
         final Uri uri = this.dbUtil.saveEvent(event);
         if (uri != null) {
             if (clickstreamContext.getClickstreamConfiguration() != null &&
-                clickstreamContext.getClickstreamConfiguration().isLogEvents()) {
+                    clickstreamContext.getClickstreamConfiguration().isLogEvents()) {
                 LOG.info("save event: " + event.getEventType() + " success, event json:");
                 LOG.info(event.toString());
             }
@@ -136,7 +137,7 @@ public class EventRecorder {
                 int lastId = Integer.parseInt(event[1]);
                 // upload events to server
                 boolean result = NetRequest.uploadEvents(event[0], clickstreamContext.getClickstreamConfiguration(),
-                    bundleSequenceId);
+                        bundleSequenceId);
                 bundleSequenceId += 1;
                 clickstreamContext.getSystem().getPreferences().putInt(KEY_BUNDLE_SEQUENCE_ID_PREF, bundleSequenceId);
                 if (!result) {
@@ -144,23 +145,25 @@ public class EventRecorder {
                     break;
                 }
                 // delete all uploaded event by last event id.
-                try {
+                try { //NOSONAR
                     int deleteSize = dbUtil.deleteBatchEvents(lastId);
                     submissions++;
                     totalEventNumber += deleteSize;
                     LOG.debug("Send event number: " + deleteSize);
-                } catch (final IllegalArgumentException exc) {
+                } catch (final IllegalArgumentException exc) { //NOSONAR
                     LOG.error(
-                        String.format(Locale.US, "Failed to delete last event: %d with %s", lastId, exc.getMessage()));
+                            String.format(
+                                    Locale.US, "Failed to delete last event: %d with %s", lastId, exc.getMessage()));
                 }
                 // if the submissions time
                 if (submissions >= DEFAULT_MAX_SUBMISSIONS_ALLOWED) {
                     LOG.debug("Reached maxSubmissions: " + DEFAULT_MAX_SUBMISSIONS_ALLOWED);
-                    break;
+                    LOG.info(String.format(Locale.US, "Submitted %s events", totalEventNumber));
+                    return totalEventNumber;
                 }
             } while (cursor.moveToNext());
             LOG.debug(String.format(Locale.US, "Time of attemptDelivery: %d",
-                TimeUnit.NANOSECONDS.toMillis(System.nanoTime()) - start));
+                    TimeUnit.NANOSECONDS.toMillis(System.nanoTime()) - start));
         } catch (Exception exception) {
             LOG.error("Failed to send event", exception);
         }
@@ -188,15 +191,14 @@ public class EventRecorder {
             if (!StringUtil.isNullOrEmpty(eventJson)) {
                 currentRequestSize += size;
                 eventNumber++;
-                if (currentRequestSize > DEFAULT_MAX_SUBMISSION_SIZE ||
-                    eventNumber > Event.Limit.MAX_EVENT_NUMBER_OF_BATCH) {
-                    if (eventBuilder.length() > 2) {
-                        int length = eventBuilder.length();
-                        eventBuilder.replace(length - 1, length, "]");
-                        lastEventId = String.valueOf(cursor.getInt(ID_COLUMN_INDEX) - 1);
-                        cursor.moveToPrevious();
-                        break;
-                    }
+                if ((currentRequestSize > DEFAULT_MAX_SUBMISSION_SIZE ||
+                        eventNumber > Event.Limit.MAX_EVENT_NUMBER_OF_BATCH)
+                        && (eventBuilder.length() > 2)) {
+                    int length = eventBuilder.length();
+                    eventBuilder.replace(length - 1, length, "]");
+                    lastEventId = String.valueOf(cursor.getInt(ID_COLUMN_INDEX) - 1);
+                    cursor.moveToPrevious();
+                    break;
                 }
                 if (cursor.isLast()) {
                     lastEventId = String.valueOf(cursor.getInt(ID_COLUMN_INDEX));
@@ -207,21 +209,22 @@ public class EventRecorder {
             }
         } while (cursor.moveToNext());
 
-        return new String[] {eventBuilder.toString(), lastEventId};
+        return new String[]{eventBuilder.toString(), lastEventId};
     }
 
     /**
      * Method for send event immediately when event saved fail.
+     *
      * @param event AnalyticsEvent
      */
     public void sendEventImmediately(AnalyticsEvent event) {
         Runnable task = () -> {
             NetRequest.uploadEvents("[" + event.toJSONObject().toString() + "]",
-                clickstreamContext.getClickstreamConfiguration(),
-                bundleSequenceId);
+                    clickstreamContext.getClickstreamConfiguration(),
+                    bundleSequenceId);
             bundleSequenceId += 1;
             clickstreamContext.getSystem().getPreferences()
-                .putInt(KEY_BUNDLE_SEQUENCE_ID_PREF, bundleSequenceId);
+                    .putInt(KEY_BUNDLE_SEQUENCE_ID_PREF, bundleSequenceId);
         };
         Executors.newSingleThreadExecutor().execute(task);
     }

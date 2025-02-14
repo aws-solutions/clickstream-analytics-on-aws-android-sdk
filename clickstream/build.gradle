@@ -16,6 +16,30 @@
 apply plugin: 'com.android.library'
 apply from: rootProject.file("configuration/checkstyle.gradle")
 
+
+android {
+    namespace "software.aws.solution.clickstream"
+    buildFeatures {
+        buildConfig = true
+    }
+    buildTypes {
+        release {
+            // These values are defined only for the release build, which
+            // is typically used for full builds and continuous builds.
+            buildConfigField("String", "VERSION_NAME", "\"${VERSION_NAME}\"")
+            resValue("string", "version_name", "${VERSION_NAME}")
+        }
+        debug {
+            // Use static values for incremental builds to ensure that
+            // resource files and BuildConfig aren't rebuilt with each run.
+            // If these rebuild dynamically, they can interfere with
+            // Apply Changes as well as Gradle UP-TO-DATE checks.
+            buildConfigField("String", "VERSION_NAME", "\"${VERSION_NAME}-debug\"")
+            resValue("string", "version_name", "${VERSION_NAME}-debug")
+        }
+    }
+}
+
 dependencies {
     implementation dependency.aws.mobileclient
     implementation dependency.amplifyframework.core

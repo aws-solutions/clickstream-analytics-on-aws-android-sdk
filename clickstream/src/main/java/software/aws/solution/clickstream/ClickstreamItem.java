@@ -64,7 +64,7 @@ public final class ClickstreamItem {
      * Builder for the {@link ClickstreamItem} class.
      */
     public static class Builder {
-        private final JSONObject builder = new JSONObject();
+        private final JSONObject jsonObjectBuilder = new JSONObject();
 
         /**
          * constructor for Builder.
@@ -139,7 +139,7 @@ public final class ClickstreamItem {
 
         private void setAttribute(String key, Object value) {
             try {
-                builder.putOpt(key, value);
+                jsonObjectBuilder.putOpt(key, value);
             } catch (JSONException exception) {
                 LOG.warn("error parsing json, error message:" + exception.getMessage());
             }
@@ -152,7 +152,7 @@ public final class ClickstreamItem {
          */
         @NonNull
         public ClickstreamItem build() {
-            return new ClickstreamItem(builder);
+            return new ClickstreamItem(jsonObjectBuilder);
         }
     }
 }

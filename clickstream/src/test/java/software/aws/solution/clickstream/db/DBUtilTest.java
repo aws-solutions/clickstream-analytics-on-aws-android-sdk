@@ -79,7 +79,7 @@ public class DBUtilTest {
     @Test
     public void testInsertSingleEventFailed() throws Exception {
         ClickstreamDBBase clickstreamDBBase = mock(ClickstreamDBBase.class);
-        ReflectUtil.modifyFiled(dbUtil, "clickstreamDBBase", clickstreamDBBase);
+        ReflectUtil.modifyField(dbUtil, "clickstreamDBBase", clickstreamDBBase);
         doThrow(new SQLException("Mocked SQLException")).when(clickstreamDBBase).insert(any(Uri.class), any(
             ContentValues.class));
         Uri uri = dbUtil.saveEvent(analyticsEvent);

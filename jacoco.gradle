@@ -1,7 +1,8 @@
 apply plugin: 'jacoco'
 
 jacoco {
-    toolVersion = "0.8.7"
+    toolVersion = "0.8.11"
+    reportsDirectory = layout.projectDirectory.dir("reports/jacoco")
 }
 
 afterEvaluate { project ->
@@ -25,7 +26,7 @@ ext {
 
 def setupAndroidReporting(Project currentProject) {
     tasks.withType(Test) {
-        jacoco.includeNoLocationClasses true
+        jacoco.includeNoLocationClasses = true
         jacoco.excludes = ['jdk.internal.*']
     }
     task jacocoTestReport(
@@ -34,29 +35,20 @@ def setupAndroidReporting(Project currentProject) {
             'testDebugUnitTest'
         ]) {
         reports {
-            csv.enabled false
-            xml {
-                enabled true
-                xml.destination file("${buildDir}/reports/jacoco/jacoco.xml")
-            }
-            html {
-                enabled true
-                html.destination file("${buildDir}/reports/jacoco")
-            }
+            xml.required = true
+            html.required = true
         }
 
         final def coverageSourceDirs = [
             "$projectDir/src/main/java"
         ]
-        final def fileFilter = project.getFileFilter()
         final def javaDebugTree = fileTree(
-            dir: "$buildDir/intermediates/javac/debug/classes",
-            excludes: fileFilter
+            dir: "$buildDir/intermediates/javac/debug/compileDebugJavaWithJavac/classes",
         )
         sourceDirectories.from = files(coverageSourceDirs)
-        classDirectories.from = files([javaDebugTree])
+        classDirectories.from = files(javaDebugTree)
         executionData.from = fileTree(
-            dir: project.buildDir,
+            dir: project.layout.buildDirectory,
             includes: ['jacoco/testDebugUnitTest.exec']
         )
     }

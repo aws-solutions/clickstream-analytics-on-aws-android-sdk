@@ -15,12 +15,14 @@
 
 package software.aws.solution.clickstream;
 
+import java.io.Serializable;
+
 import okhttp3.Dns;
 
 /**
  * Clickstream Configuration.
  */
-public class ClickstreamConfiguration {
+public class ClickstreamConfiguration implements Serializable {
     private static final long DEFAULT_SEND_EVENTS_INTERVAL = 10000L;
     private static final long DEFAULT_CALL_TIME_OUT = 15000L;
     private static final long DEFAULT_SESSION_TIME_OUT = 1800000L;
@@ -42,6 +44,7 @@ public class ClickstreamConfiguration {
      * Create an {@link ClickstreamConfiguration} object.
      */
     public ClickstreamConfiguration() {
+        // Creates a new ClickstreamConfiguration instance with default values.
     }
 
     static ClickstreamConfiguration getDefaultConfiguration() {

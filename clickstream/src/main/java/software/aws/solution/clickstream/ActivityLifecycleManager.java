@@ -98,7 +98,7 @@ final class ActivityLifecycleManager implements Application.ActivityLifecycleCal
             }
         }
         autoRecordEventClient.recordViewScreenAutomatically(activity);
-        isFromForeground = false;
+        isFromForeground = false; //NOSONAR
     }
 
     /**
@@ -148,7 +148,7 @@ final class ActivityLifecycleManager implements Application.ActivityLifecycleCal
             autoRecordEventClient.flushEvents();
         } else if (event == Lifecycle.Event.ON_START) {
             LOG.debug("Application entered the foreground.");
-            isFromForeground = true;
+            isFromForeground = true; //NOSONAR
             boolean isNewSession = sessionClient.initialSession();
             autoRecordEventClient.handleAppStart();
             autoRecordEventClient.updateStartEngageTimestamp();

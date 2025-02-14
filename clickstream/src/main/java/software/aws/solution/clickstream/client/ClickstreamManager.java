@@ -60,7 +60,8 @@ public class ClickstreamManager {
             this.sessionClient = new SessionClient(this.clickstreamContext);
             this.autoRecordEventClient = new AutoRecordEventClient(this.clickstreamContext);
             this.clickstreamContext.setSessionClient(this.sessionClient);
-            if (config.isTrackAppExceptionEvents()) {
+            Boolean isTrackAppExceptionEvents = config.isTrackAppExceptionEvents();
+            if (Boolean.TRUE.equals(isTrackAppExceptionEvents)) {
                 exceptionHandler = ClickstreamExceptionHandler.init(this.clickstreamContext);
                 enableTrackAppException();
             }

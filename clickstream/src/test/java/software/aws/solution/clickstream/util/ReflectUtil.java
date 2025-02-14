@@ -22,7 +22,6 @@ import com.amplifyframework.util.UserAgent;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -40,19 +39,16 @@ public final class ReflectUtil {
     }
 
     /**
-     * modify filed value even if the private static final param, only for test use.
+     * modify field value even if the private static final param, only for test use.
      *
      * @param object        the object to modify.
      * @param fieldName     filed name to modify.
      * @param newFieldValue new filed value to set.
      * @throws Exception exception.
      */
-    public static void modifyFiled(Object object, String fieldName, Object newFieldValue) throws Exception {
+    public static void modifyField(Object object, String fieldName, Object newFieldValue) throws Exception {
         Field field = object.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
         field.set(object, newFieldValue);
     }
 
@@ -64,12 +60,9 @@ public final class ReflectUtil {
      * @return the filed object.
      * @throws Exception exception.
      */
-    public static Object getFiled(Object object, String fieldName) throws Exception {
+    public static Object getField(Object object, String fieldName) throws Exception {
         Field field = object.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
         return field.get(object);
     }
 

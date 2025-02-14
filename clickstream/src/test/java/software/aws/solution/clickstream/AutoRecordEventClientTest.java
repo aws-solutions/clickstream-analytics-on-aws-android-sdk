@@ -821,7 +821,7 @@ public class AutoRecordEventClientTest {
      */
     @Test
     public void testAppVersionForNotUpdate() throws Exception {
-        ReflectUtil.modifyFiled(clickstreamContext.getSystem().getAppDetails(), "versionName", "1.0");
+        ReflectUtil.modifyField(clickstreamContext.getSystem().getAppDetails(), "versionName", "1.0");
         ReflectUtil.invokeMethod(client, "checkAppVersionUpdate");
         ReflectUtil.invokeMethod(client, "checkAppVersionUpdate");
 
@@ -847,13 +847,13 @@ public class AutoRecordEventClientTest {
      */
     @Test
     public void testAppVersionForUpdate() throws Exception {
-        ReflectUtil.modifyFiled(clickstreamContext.getSystem().getAppDetails(), "versionName", "1.0");
+        ReflectUtil.modifyField(clickstreamContext.getSystem().getAppDetails(), "versionName", "1.0");
         ReflectUtil.invokeMethod(client, "checkAppVersionUpdate");
 
         String previousAppVersion = clickstreamContext.getSystem().getPreferences().getString("appVersion", "");
         assertNotNull(previousAppVersion);
 
-        ReflectUtil.modifyFiled(clickstreamContext.getSystem().getAppDetails(), "versionName", "2.0");
+        ReflectUtil.modifyField(clickstreamContext.getSystem().getAppDetails(), "versionName", "2.0");
         ReflectUtil.invokeMethod(client, "checkAppVersionUpdate");
 
         try (Cursor cursor = dbUtil.queryAllEvents()) {
@@ -1048,9 +1048,9 @@ public class AutoRecordEventClientTest {
         Thread.sleep(1100);
         lifecycle.handleLifecycleEvent(Lifecycle.Event.ON_STOP);
         EventRecorder eventRecorder =
-            (EventRecorder) ReflectUtil.getFiled(clickstreamContext.getAnalyticsClient(), "eventRecorder");
+            (EventRecorder) ReflectUtil.getField(clickstreamContext.getAnalyticsClient(), "eventRecorder");
         ExecutorService executorService =
-            (ExecutorService) ReflectUtil.getFiled(eventRecorder, "submissionRunnableQueue");
+            (ExecutorService) ReflectUtil.getField(eventRecorder, "submissionRunnableQueue");
         assertEquals(1, ((ThreadPoolExecutor) executorService).getActiveCount());
     }
 

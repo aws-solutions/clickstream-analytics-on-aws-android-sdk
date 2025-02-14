@@ -4,11 +4,11 @@
 
 ## Introduction
 
-Clickstream Android SDK can help you easily collect and report in-app events from Android devices to AWS. This SDK is part of an AWS solution - [Clickstream Analytics on AWS](https://github.com/awslabs/clickstream-analytics-on-aws), which provisions data pipeline to ingest and process event data into AWS services such as S3, Redshift.
+Clickstream Android SDK can help you easily collect and report in-app events from Android devices to AWS. This SDK is part of an AWS solution - [Clickstream Analytics on AWS](https://github.com/aws-solutions/clickstream-analytics-on-aws-android-sdk), which provisions data pipeline to ingest and process event data into AWS services such as S3, Redshift.
 
 The SDK relies on the Amplify for Android SDK Core Library and is developed according to the Amplify Android SDK plug-in specification. In addition, we've added features that automatically collect common user events and attributes (e.g., screen view, first open) to simplify data collection for users.
 
-Visit our [Documentation site](https://awslabs.github.io/clickstream-analytics-on-aws/en/latest/sdk-manual/android/) to learn more about Clickstream Android SDK.
+Visit our [Documentation site](https://docs.aws.amazon.com/solutions/latest/clickstream-analytics-on-aws/android-sdk.html) to learn more about Clickstream Android SDK.
 
 ### Platform Support
 
@@ -22,7 +22,7 @@ Add the following dependency to your `app` module's `build.gradle` file.
 
 ```groovy
 dependencies {
-    implementation 'software.aws.solution:clickstream:0.14.1'
+    implementation 'software.aws.solution:clickstream:1.0.0'
 }
 ```
 
@@ -347,4 +347,9 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 
 ## License
 
-This library is licensed under the [Apache 2.0 License](./LICENSE).
+This library is licensed under the [Apache 2.0 License](./LICENSE.txt).
+
+
+## Anonymous operational metrics
+	 
+This solution collects anonymous operational metrics to help AWS improve the quality and features of the solution. For more information, including how to disable this capability, please see the [implementation guide](https://docs.aws.amazon.com/solutions/latest/clickstream-analytics-on-aws/solution-overview.html).

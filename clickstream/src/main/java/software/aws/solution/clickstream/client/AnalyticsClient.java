@@ -26,13 +26,14 @@ import software.aws.solution.clickstream.ClickstreamConfiguration;
 import software.aws.solution.clickstream.client.util.PreferencesUtil;
 import software.aws.solution.clickstream.client.util.StringUtil;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A client to manage creating and sending analytics events.
  */
-public class AnalyticsClient {
+public class AnalyticsClient implements Serializable {
     private static final Log LOG = LogFactory.getLog(AnalyticsClient.class);
     private final ClickstreamContext context;
     private final Map<String, Object> globalAttributes = new ConcurrentHashMap<>();

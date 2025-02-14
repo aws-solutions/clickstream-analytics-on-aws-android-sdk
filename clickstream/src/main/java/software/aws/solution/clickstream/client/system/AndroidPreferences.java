@@ -18,10 +18,12 @@ package software.aws.solution.clickstream.client.system;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.io.Serializable;
+
 /**
  * Android Preferences.
  */
-public class AndroidPreferences {
+public class AndroidPreferences implements Serializable {
 
     private final SharedPreferences preferences;
 

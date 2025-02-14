@@ -23,12 +23,13 @@ import android.provider.Settings;
 import com.amazonaws.logging.Log;
 import com.amazonaws.logging.LogFactory;
 
+import java.io.Serializable;
 import java.util.Locale;
 
 /**
  * Utility Tool for Android Connectivity.
  */
-public class AndroidConnectivity {
+public class AndroidConnectivity implements Serializable {
     private static final Log LOG = LogFactory.getLog(AndroidConnectivity.class);
     /**
      * Check has WIFI or not.
@@ -114,8 +115,16 @@ public class AndroidConnectivity {
                 hasMobile = false;
             }
         }
-        LOG.info(String.format(Locale.US, "Device Connectivity (%s)",
-            hasWifi ? "On Wifi" : (hasMobile ? "On Mobile" : "No network connectivity")));
+        LOG.info(String.format(Locale.US, "Device Connectivity (%s)", getConnectivityStatus()));
+    }
+
+    private String getConnectivityStatus() {
+        if (hasWifi) {
+            return "On Wifi";
+        } else if (hasMobile) {
+            return "On Mobile";
+        }
+        return "No network connectivity";
     }
 }
 

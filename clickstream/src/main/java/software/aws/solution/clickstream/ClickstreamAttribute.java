@@ -26,10 +26,12 @@ import com.amplifyframework.analytics.AnalyticsStringProperty;
 
 import software.aws.solution.clickstream.client.Event;
 
+import java.io.Serializable;
+
 /**
  * Clickstream attribute setter.
  */
-public class ClickstreamAttribute {
+public class ClickstreamAttribute implements Serializable {
     private final AnalyticsProperties attributes;
 
     /**
@@ -38,7 +40,7 @@ public class ClickstreamAttribute {
      * @param builder An instance of the builder with the desired properties set.
      */
     protected ClickstreamAttribute(@NonNull Builder builder) {
-        this.attributes = builder.builder.build();
+        this.attributes = builder.analyticsPropertiesBuilder.build();
     }
 
     /**
@@ -64,7 +66,7 @@ public class ClickstreamAttribute {
      * Builder for the {@link ClickstreamAttribute} class.
      */
     public static class Builder {
-        private final AnalyticsProperties.Builder builder = AnalyticsProperties.builder();
+        private final AnalyticsProperties.Builder analyticsPropertiesBuilder = AnalyticsProperties.builder();
 
         /**
          * Adds a {@link AnalyticsStringProperty} to the {@link AnalyticsProperties} under
@@ -77,7 +79,7 @@ public class ClickstreamAttribute {
         @NonNull
         public Builder add(@NonNull @Size(min = 1L, max = Event.Limit.MAX_LENGTH_OF_NAME) String key,
                            @NonNull @Size(min = 0L, max = Event.Limit.MAX_LENGTH_OF_VALUE) String value) {
-            builder.add(key, value);
+            analyticsPropertiesBuilder.add(key, value);
             return this;
         }
 
@@ -92,7 +94,7 @@ public class ClickstreamAttribute {
         @NonNull
         public Builder add(@NonNull @Size(min = 1L, max = Event.Limit.MAX_LENGTH_OF_NAME) String key,
                            @NonNull Double value) {
-            builder.add(key, value);
+            analyticsPropertiesBuilder.add(key, value);
             return this;
         }
 
@@ -107,7 +109,7 @@ public class ClickstreamAttribute {
         @NonNull
         public Builder add(@NonNull @Size(min = 1L, max = Event.Limit.MAX_LENGTH_OF_NAME) String key,
                            @NonNull Boolean value) {
-            builder.add(key, value);
+            analyticsPropertiesBuilder.add(key, value);
             return this;
         }
 
@@ -122,7 +124,7 @@ public class ClickstreamAttribute {
         @NonNull
         public Builder add(@NonNull @Size(min = 1L, max = Event.Limit.MAX_LENGTH_OF_NAME) String key,
                            @NonNull Integer value) {
-            builder.add(key, value);
+            analyticsPropertiesBuilder.add(key, value);
             return this;
         }
 
@@ -137,7 +139,7 @@ public class ClickstreamAttribute {
         @NonNull
         public Builder add(@NonNull @Size(min = 1L, max = Event.Limit.MAX_LENGTH_OF_NAME) String key,
                            @NonNull Long value) {
-            builder.add(key, AnalyticsLongProperty.from(value));
+            analyticsPropertiesBuilder.add(key, AnalyticsLongProperty.from(value));
             return this;
         }
 

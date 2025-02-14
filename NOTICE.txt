@@ -1,0 +1,45 @@
+Clickstream Analytics on AWS Swift SDK
+
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+Licensed under the Apache License Version 2.0 (the "License"). You may not use this file except
+in compliance with the License. A copy of the License is located at http://www.apache.org/licenses/
+or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+
+**********************
+THIRD PARTY COMPONENTS
+**********************
+
+This software includes third party software subject to the following copyrights:
+
+Appium-Python-Client under the Apache-2.0 license.
+pytest under the MIT license.
+boto3 under the Apache-2.0 license.
+requests under the Apache-2.0 license.
+PyYAML under the MIT license.
+pytest-html under the MIT license.
+selenium under the Apache-2.0 license.
+com.amazonaws:aws-android-sdk-mobile-client under the Apache-2.0 license.
+com.amplifyframework:core under the Apache-2.0 license.
+com.squareup.okhttp3:okhttp under the Apache-2.0 license.
+androidx.lifecycle:lifecycle-common-java8 under the Apache-2.0 license.
+androidx.lifecycle:lifecycle-process under the Apache-2.0 license.
+junit:junit under the EPL-1.0 license.
+org.mockito:mockito-core under MIT license.
+org.mockito:mockito-inline under MIT license.
+org.robolectric:robolectric under MIT license.
+androidx.test:core under the Apache-2.0 license.
+com.github.dreamhead:moco-core under MIT license.
+org.jacoco:org.jacoco.agent under the EPL-2.0 license.
+org.jacoco:org.jacoco.ant under the EPL-2.0 license.
+
+
+********************
+OPEN SOURCE LICENSES
+********************
+
+Apache-2.0 - https://spdx.org/licenses/Apache-2.0.html
+MIT - https://spdx.org/licenses/MIT.html
+EPL-1.0 - https://spdx.org/licenses/EPL-1.0.html
+EPL-2.0 - https://spdx.org/licenses/EPL-2.0.html

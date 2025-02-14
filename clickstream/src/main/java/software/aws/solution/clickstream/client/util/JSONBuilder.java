@@ -35,6 +35,7 @@ public class JSONBuilder implements JSONSerializable {
      *
      */
     public JSONBuilder() {
+        // Creates a new JSONBuilder instance with default values.
     }
 
     /**
