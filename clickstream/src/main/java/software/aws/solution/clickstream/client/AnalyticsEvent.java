@@ -32,12 +32,15 @@ import software.aws.solution.clickstream.client.util.JSONSerializable;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
  * An event for clickstream.
  */
 public class AnalyticsEvent implements JSONSerializable {
+    private static final String UNKNOWN = "UNKNOWN";
     private static final Log LOG = LogFactory.getLog(AnalyticsEvent.class);
     private static final int INDENTATION = 4;
     private String deviceId;
@@ -230,7 +233,7 @@ public class AnalyticsEvent implements JSONSerializable {
         try {
             attributes.putOpt(name, value);
         } catch (JSONException exception) {
-            LOG.error("error parsing json, error message:" + exception.getMessage());
+            LOG.error("error parsing json, error message:" + exception.getMessage()); //NOSONAR
         }
     }
 
@@ -261,7 +264,7 @@ public class AnalyticsEvent implements JSONSerializable {
                     attributes.putOpt(name, value);
                 }
             } catch (JSONException exception) {
-                LOG.error("error parsing json, error message:" + exception.getMessage());
+                LOG.error("error parsing json, error message:" + exception.getMessage()); //NOSONAR
             }
         } else {
             attributes.remove(name);
@@ -283,7 +286,7 @@ public class AnalyticsEvent implements JSONSerializable {
                     return;
                 }
                 Event.EventError attributeError =
-                    EventChecker.checkItemAttribute(eventItems.length(), item);
+                        EventChecker.checkItemAttribute(eventItems.length(), item);
 
                 if (attributeError.getErrorCode() > 0 && !attributes.has(Event.ReservedAttribute.ERROR_CODE)) {
                     attributes.putOpt(Event.ReservedAttribute.ERROR_CODE, attributeError.getErrorCode());
@@ -294,7 +297,7 @@ public class AnalyticsEvent implements JSONSerializable {
                 }
             }
         } catch (JSONException exception) {
-            LOG.error("error parsing json, error message:" + exception.getMessage());
+            LOG.error("error parsing json, error message:" + exception.getMessage()); //NOSONAR
         }
     }
 
@@ -310,7 +313,7 @@ public class AnalyticsEvent implements JSONSerializable {
             try {
                 attributes.putOpt(name, value);
             } catch (JSONException exception) {
-                LOG.error("error parsing json, error message:" + exception.getMessage());
+                LOG.error("error parsing json, error message:" + exception.getMessage()); //NOSONAR
             }
         } else {
             attributes.remove(name);
@@ -448,6 +451,14 @@ public class AnalyticsEvent implements JSONSerializable {
         }
     }
 
+    private String getOrDefault(Supplier<String> supplier) {
+        try {
+            return Optional.ofNullable(supplier.get()).orElse(UNKNOWN);
+        } catch (Exception exception) {
+            return UNKNOWN;
+        }
+    }
+
     /**
      * Convert event to JSON format.
      *
@@ -456,12 +467,12 @@ public class AnalyticsEvent implements JSONSerializable {
     @Override
     public JSONObject toJSONObject() {
         final Locale locale = this.deviceDetails.locale();
-        final String localeString = locale != null ? locale.toString() : "UNKNOWN";
-        final String displayCountryString = locale != null ? locale.getDisplayCountry() : "UNKNOWN";
-        final String countryString = locale != null ? locale.getCountry() : "UNKNOWN";
-        final String languageString = locale != null ? locale.getLanguage() : "UNKNOWN";
-        final String carrier = this.deviceDetails.carrier();
-        final String carrierString = carrier != null ? carrier : "UNKNOWN";
+
+        final String localeString = getOrDefault(locale::toString);
+        final String displayCountryString = getOrDefault(locale::getDisplayCountry);
+        final String countryString = getOrDefault(locale::getCountry);
+        final String languageString = getOrDefault(locale::getLanguage);
+        final String carrierString = getOrDefault(() -> this.deviceDetails.carrier());
 
         final JSONBuilder builder = new JSONBuilder();
 
@@ -492,10 +503,9 @@ public class AnalyticsEvent implements JSONSerializable {
         builder.withAttribute("locale", localeString);
         builder.withAttribute("carrier", carrierString);
         if (this.connectivity != null) {
-            builder.withAttribute("network_type",
-                this.connectivity.hasWAN() ? "Mobile" : this.connectivity.hasWifi() ? "WIFI" : "UNKNOWN");
+            builder.withAttribute("network_type", getNetworkType());
         } else {
-            builder.withAttribute("network_type", "UNKNOWN");
+            builder.withAttribute("network_type", UNKNOWN);
         }
 
         builder.withAttribute("screen_height", getHeightPixels());
@@ -544,12 +554,29 @@ public class AnalyticsEvent implements JSONSerializable {
         // Application Details Attributes -- Prefix with 'app_'
         // ****************************************************
         builder.withAttribute("app_version", this.appDetails.versionName());
-        //builder.withAttribute("app_version_code", this.appDetails.versionCode());
         builder.withAttribute("app_package_name", this.appDetails.packageName());
         builder.withAttribute("app_title", this.appDetails.getAppTitle());
         builder.withAttribute("items", this.eventItems);
         builder.withAttribute("user", this.userAttributes);
         builder.withAttribute("attributes", this.attributes);
         return builder.toJSONObject();
+    }
+
+    /**
+     * Gets the current network connection type of the device.
+     *
+     * @return A String representing the network type:
+     *         "Mobile" for WAN connections,
+     *         "WIFI" for WiFi connections,
+     *         or "UNKNOWN" if no recognized connection is available
+     */
+    public String getNetworkType() {
+        if (this.connectivity.hasWAN()) {
+            return "Mobile";
+        } else if (this.connectivity.hasWifi()) {
+            return "WIFI";
+        } else {
+            return UNKNOWN;
+        }
     }
 }

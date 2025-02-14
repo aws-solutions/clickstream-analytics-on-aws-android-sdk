@@ -75,40 +75,16 @@ public final class ClickstreamExceptionHandler implements Thread.UncaughtExcepti
     @Override
     public void uncaughtException(@NonNull Thread thread, @NonNull Throwable throwable) {
         try {
-            if (clickstreamContext.getClickstreamConfiguration().isTrackAppExceptionEvents()) {
-                String exceptionMessage = "";
-                String exceptionStack = "";
-                try {
-                    if (throwable.getMessage() != null) {
-                        exceptionMessage = throwable.getMessage();
-                    }
-                    final Writer writer = new StringWriter();
-                    PrintWriter printWriter = new PrintWriter(writer);
-                    throwable.printStackTrace(printWriter);
-                    Throwable cause = throwable.getCause();
-                    while (cause != null) {
-                        cause.printStackTrace(printWriter);
-                        cause = cause.getCause();
-                    }
-                    printWriter.close();
-                    exceptionStack = writer.toString();
-                } catch (Exception exception) {
-                    LOG.error("exception for get exception stack:", exception);
-                }
-
-                final AnalyticsEvent event =
-                    this.clickstreamContext.getAnalyticsClient().createEvent(Event.PresetEvent.APP_EXCEPTION);
-                event.addInternalAttribute("exception_message", exceptionMessage);
-                event.addInternalAttribute("exception_stack", exceptionStack);
-                this.clickstreamContext.getAnalyticsClient().recordEvent(event);
+            Boolean isTrackAppExceptionEvents = clickstreamContext
+                    .getClickstreamConfiguration().isTrackAppExceptionEvents();
+            if (Boolean.TRUE.equals(isTrackAppExceptionEvents)) {
+                trackExceptionEvent(throwable);
             }
 
             this.clickstreamContext.getAnalyticsClient().submitEvents();
-            try {
-                Thread.sleep(SLEEP_TIMEOUT_MS);
-            } catch (InterruptedException exception) {
-                LOG.error("interrupted exception for sleep:", exception);
-            }
+
+            sleepWithInterruptHandling();
+
             if (defaultExceptionHandler != null) {
                 defaultExceptionHandler.uncaughtException(thread, throwable);
             } else {
@@ -116,6 +92,57 @@ public final class ClickstreamExceptionHandler implements Thread.UncaughtExcepti
             }
         } catch (Exception exception) {
             LOG.error("uncaughtException:", exception);
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Tracks application exceptions by creating and recording an analytics event with exception details.
+     *
+     * @param throwable The throwable object containing exception details to be tracked
+     */
+    private void trackExceptionEvent(Throwable throwable) {
+        String exceptionMessage = "";
+        String exceptionStack = "";
+        try {
+            if (throwable.getMessage() != null) {
+                exceptionMessage = throwable.getMessage();
+            }
+            final Writer writer = new StringWriter();
+            PrintWriter printWriter = new PrintWriter(writer);
+            throwable.printStackTrace(printWriter);
+            Throwable cause = throwable.getCause();
+            while (cause != null) {
+                cause.printStackTrace(printWriter);
+                cause = cause.getCause();
+            }
+
+            printWriter.close();
+            exceptionStack = writer.toString();
+        } catch (Exception exception) {
+            LOG.error("exception for get exception stack:", exception);
+        }
+
+        final AnalyticsEvent event =
+                this.clickstreamContext.getAnalyticsClient().createEvent(Event.PresetEvent.APP_EXCEPTION);
+        event.addInternalAttribute("exception_message", exceptionMessage);
+        event.addInternalAttribute("exception_stack", exceptionStack);
+
+        this.clickstreamContext.getAnalyticsClient().recordEvent(event);
+    }
+
+    /**
+     * Pauses the current thread execution for a specified timeout period.
+     * If interrupted while sleeping, logs the error and preserves the interrupt status.
+     *
+     * @throws RuntimeException if any other unexpected error occurs during sleep
+     */
+    private void sleepWithInterruptHandling() {
+        try {
+            Thread.sleep(SLEEP_TIMEOUT_MS);
+        } catch (InterruptedException exception) {
+            LOG.error("interrupted exception for sleep:", exception);
+            Thread.currentThread().interrupt();
         }
     }
 

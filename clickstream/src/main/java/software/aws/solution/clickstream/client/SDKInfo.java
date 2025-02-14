@@ -15,10 +15,12 @@
 
 package software.aws.solution.clickstream.client;
 
+import java.io.Serializable;
+
 /**
  * Entity for SDKInfo.
  */
-public class SDKInfo {
+public class SDKInfo implements Serializable {
     private final String name;
     private final String version;
 

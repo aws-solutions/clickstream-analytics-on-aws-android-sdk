@@ -24,6 +24,7 @@ import androidx.lifecycle.LifecycleRegistry;
 import androidx.test.core.app.ApplicationProvider;
 
 import com.amazonaws.logging.Log;
+import com.amazonaws.logging.LogFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,9 +33,12 @@ import software.aws.solution.clickstream.client.AutoRecordEventClient;
 import software.aws.solution.clickstream.client.ClickstreamManager;
 import software.aws.solution.clickstream.client.ScreenRefererTool;
 import software.aws.solution.clickstream.client.SessionClient;
-import software.aws.solution.clickstream.util.ReflectUtil;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -66,8 +70,10 @@ public final class ActivityLifecycleManagerUnitTest {
         when(clickstreamManager.getAutoRecordEventClient()).thenReturn(autoRecordEventClient);
         lifecycleManager = new ActivityLifecycleManager(clickstreamManager);
         this.callbacks = lifecycleManager;
-        log = mock(Log.class);
-        ReflectUtil.modifyFiled(this.callbacks, "LOG", log);
+
+        log = LogFactory.getLog(Application.ActivityLifecycleCallbacks.class);
+        log.setLevel(LogFactory.Level.DEBUG);
+
         lifecycleOwner = mock(LifecycleOwner.class);
         lifecycle = new LifecycleRegistry(lifecycleOwner);
         lifecycleManager.startLifecycleTracking(ApplicationProvider.getApplicationContext(), lifecycle);
@@ -115,9 +121,17 @@ public final class ActivityLifecycleManagerUnitTest {
      */
     @Test
     public void testContextIsInValid() {
+        ByteArrayOutputStream logContent = new ByteArrayOutputStream();
+        PrintStream oldSystemOut = System.out;
+        System.setOut(new PrintStream(logContent));
+
         Activity activity = mock(Activity.class);
         lifecycleManager.startLifecycleTracking(activity, lifecycle);
-        verify(log).warn("The context is not ApplicationContext, so lifecycle events are not automatically recorded");
+
+        System.setOut(oldSystemOut);
+        assertTrue(
+                logContent.toString().contains(
+                        "The context is not ApplicationContext, so lifecycle events are not automatically recorded"));
     }
 
     /**

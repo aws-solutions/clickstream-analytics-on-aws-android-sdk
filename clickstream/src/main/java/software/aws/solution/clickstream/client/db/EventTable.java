@@ -69,8 +69,8 @@ public final class EventTable {
      * @param oldVersion The old version of the database.
      * @param newVersion The new version of the database.
      */
-    public static void onUpgrade(final SQLiteDatabase database, final int oldVersion, final int newVersion) {
-
+    public static void onUpgrade(final SQLiteDatabase database, final int oldVersion, final int newVersion) { //NOSONAR
+        // do nothing
     }
 
     /**

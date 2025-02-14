@@ -24,10 +24,12 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.text.TextUtils;
 
+import java.io.Serializable;
+
 /**
  * Clickstream Database Base.
  */
-public class ClickstreamDBBase {
+public class ClickstreamDBBase implements Serializable {
     private static final int EVENTS = 10;
     private static final int EVENT_ID = 20;
     private static final int EVENT_LAST_ID = 30;
@@ -89,7 +91,7 @@ public class ClickstreamDBBase {
         if (uriType == EVENTS) {
             id = db.insertOrThrow(EventTable.TABLE_EVENT, null, values);
         } else {
-            throw new IllegalArgumentException("Unknown URI: " + uri);
+            throw new IllegalArgumentException("Unknown URI: " + uri); //NOSONAR
         }
         return Uri.parse(BASE_PATH + "/" + id);
     }
@@ -153,7 +155,7 @@ public class ClickstreamDBBase {
                 queryBuilder.appendWhere(EventTable.COLUMN_ID + "=" + uri.getLastPathSegment());
                 break;
             default:
-                throw new IllegalArgumentException("Unknown URI: " + uri);
+                throw new IllegalArgumentException("Unknown URI: " + uri); //NOSONAR
         }
         final SQLiteDatabase db = databaseHelper.getWritableDatabase();
         return queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder, limit);
@@ -190,7 +192,7 @@ public class ClickstreamDBBase {
                 rowsDeleted = db.delete(EventTable.TABLE_EVENT, EventTable.COLUMN_ID + "<=" + lastId, null);
                 break;
             default:
-                throw new IllegalArgumentException("Unknown URI: " + uri);
+                throw new IllegalArgumentException("Unknown URI: " + uri); //NOSONAR
         }
         return rowsDeleted;
     }

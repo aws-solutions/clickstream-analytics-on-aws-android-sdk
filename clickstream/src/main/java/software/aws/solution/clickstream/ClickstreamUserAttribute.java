@@ -40,7 +40,7 @@ public class ClickstreamUserAttribute extends UserProfile {
      */
     protected ClickstreamUserAttribute(@NonNull Builder builder) {
         super(builder);
-        this.userAttributes = builder.builder.build();
+        this.userAttributes = builder.analyticsPropertiesBuilder.build();
     }
 
     /**
@@ -66,7 +66,7 @@ public class ClickstreamUserAttribute extends UserProfile {
      * Builder for the {@link ClickstreamUserAttribute} class.
      */
     public static final class Builder extends UserProfile.Builder<Builder, ClickstreamUserAttribute> {
-        private final AnalyticsProperties.Builder builder = AnalyticsProperties.builder();
+        private final AnalyticsProperties.Builder analyticsPropertiesBuilder = AnalyticsProperties.builder();
 
         /**
          * Adds a {@link AnalyticsStringProperty} to the {@link AnalyticsProperties} under
@@ -79,7 +79,7 @@ public class ClickstreamUserAttribute extends UserProfile {
         @NonNull
         public Builder add(@NonNull @Size(min = 1L, max = MAX_NAME_LENGTH) String key,
                            @NonNull @Size(min = 1L, max = MAX_VALUE_LENGTH) String value) {
-            builder.add(key, value);
+            analyticsPropertiesBuilder.add(key, value);
             return this;
         }
 
@@ -93,7 +93,7 @@ public class ClickstreamUserAttribute extends UserProfile {
          */
         @NonNull
         public Builder add(@NonNull @Size(min = 1L, max = MAX_NAME_LENGTH) String key, @NonNull Double value) {
-            builder.add(key, value);
+            analyticsPropertiesBuilder.add(key, value);
             return this;
         }
 
@@ -107,7 +107,7 @@ public class ClickstreamUserAttribute extends UserProfile {
          */
         @NonNull
         public Builder add(@NonNull @Size(min = 1L, max = MAX_NAME_LENGTH) String key, @NonNull Boolean value) {
-            builder.add(key, value);
+            analyticsPropertiesBuilder.add(key, value);
             return this;
         }
 
@@ -121,7 +121,7 @@ public class ClickstreamUserAttribute extends UserProfile {
          */
         @NonNull
         public Builder add(@NonNull @Size(min = 1L, max = MAX_NAME_LENGTH) String key, @NonNull Integer value) {
-            builder.add(key, value);
+            analyticsPropertiesBuilder.add(key, value);
             return this;
         }
 
@@ -136,7 +136,7 @@ public class ClickstreamUserAttribute extends UserProfile {
         @NonNull
         public ClickstreamUserAttribute.Builder add(@NonNull @Size(min = 1L, max = MAX_NAME_LENGTH) String key,
                                                     @NonNull Long value) {
-            builder.add(key, AnalyticsLongProperty.from(value));
+            analyticsPropertiesBuilder.add(key, AnalyticsLongProperty.from(value));
             return this;
         }
 

@@ -19,10 +19,12 @@ import androidx.annotation.NonNull;
 
 import software.aws.solution.clickstream.client.util.PreferencesUtil;
 
+import java.io.Serializable;
+
 /**
  * Client for managing start and pause session.
  */
-public class SessionClient {
+public class SessionClient implements Serializable {
 
     /**
      * The context object wraps all the essential information from the app

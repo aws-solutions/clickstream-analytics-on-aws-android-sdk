@@ -240,7 +240,7 @@ public final class AWSClickstreamPlugin extends AnalyticsPlugin<Object> {
     /**
      * The Clickstream configuration keys.
      */
-    static class ConfigurationKey {
+    static final class ConfigurationKey {
         static final String APP_ID = "appId";
         static final String ENDPOINT = "endpoint";
         static final String SEND_EVENTS_INTERVAL = "autoFlushEventsInterval";
@@ -252,6 +252,10 @@ public final class AWSClickstreamPlugin extends AnalyticsPlugin<Object> {
         static final String IS_TRACK_SCREEN_VIEW_EVENTS = "isTrackScreenViewEvents";
         static final String IS_TRACK_USER_ENGAGEMENT_EVENTS = "isTrackUserEngagementEvents";
         static final String GLOBAL_ATTRIBUTES = "globalAttributes";
+
+        private ConfigurationKey() {
+            throw new IllegalStateException("Utility class");
+        }
     }
 }
 

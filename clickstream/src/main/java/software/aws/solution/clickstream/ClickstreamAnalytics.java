@@ -39,9 +39,10 @@ import software.aws.solution.clickstream.client.util.ThreadUtil;
  */
 public final class ClickstreamAnalytics {
     private static final Log LOG = LogFactory.getLog(ClickstreamAnalytics.class);
+    private static final String NOINSTANCEALLOWED = "No instances allowed.";
 
     private ClickstreamAnalytics() {
-        throw new UnsupportedOperationException("No instances allowed.");
+        throw new UnsupportedOperationException(NOINSTANCEALLOWED);
     }
 
     /**
@@ -242,7 +243,7 @@ public final class ClickstreamAnalytics {
     /**
      * Item attributes.
      */
-    public static class Item {
+    public static final class Item {
         /**
          * key to item id.
          */
@@ -299,23 +300,31 @@ public final class ClickstreamAnalytics {
          * key to item category5.
          */
         public static final String ITEM_CATEGORY5 = "item_category5";
+
+        private Item() {
+            throw new IllegalStateException(NOINSTANCEALLOWED);
+        }
     }
 
     /**
      * Preset Event.
      */
-    public static class Event {
+    public static final class Event {
 
         /**
          * screen view.
          */
         public static final String SCREEN_VIEW = PresetEvent.SCREEN_VIEW;
+
+        private Event() {
+            throw new IllegalStateException(NOINSTANCEALLOWED);
+        }
     }
 
     /**
      * Preset Attributes.
      */
-    public static class Attr {
+    public static final class Attr {
 
         /**
          * screen name.
@@ -381,5 +390,9 @@ public final class ClickstreamAnalytics {
          * event currency.
          */
         public static final String CURRENCY = "_currency";
+
+        private Attr() {
+            throw new IllegalStateException(NOINSTANCEALLOWED);
+        }
     }
 }

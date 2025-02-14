@@ -27,6 +27,7 @@ import androidx.test.core.app.ApplicationProvider;
 import com.amplifyframework.core.Amplify;
 
 import com.amazonaws.logging.Log;
+import com.amazonaws.logging.LogFactory;
 import com.github.dreamhead.moco.HttpServer;
 import com.github.dreamhead.moco.Runner;
 import org.json.JSONArray;
@@ -47,6 +48,8 @@ import software.aws.solution.clickstream.client.db.ClickstreamDBUtil;
 import software.aws.solution.clickstream.util.CustomOkhttpDns;
 import software.aws.solution.clickstream.util.ReflectUtil;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.Map;
 
 import static com.github.dreamhead.moco.Moco.and;
@@ -59,11 +62,12 @@ import static com.github.dreamhead.moco.Moco.text;
 import static com.github.dreamhead.moco.Moco.uri;
 import static com.github.dreamhead.moco.Runner.runner;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -113,8 +117,8 @@ public class IntegrationTest {
         Amplify.configure(context);
         analyticsClient = plugin.getEscapeHatch();
         assert analyticsClient != null;
-        eventRecorder = (EventRecorder) ReflectUtil.getFiled(analyticsClient, "eventRecorder");
-        dbUtil = (ClickstreamDBUtil) ReflectUtil.getFiled(eventRecorder, "dbUtil");
+        eventRecorder = (EventRecorder) ReflectUtil.getField(analyticsClient, "eventRecorder");
+        dbUtil = (ClickstreamDBUtil) ReflectUtil.getField(eventRecorder, "dbUtil");
         assertEquals(3, dbUtil.getTotalNumber());
         dbUtil.deleteBatchEvents(3);
     }
@@ -333,6 +337,7 @@ public class IntegrationTest {
         ClickstreamAnalytics.addGlobalAttributes(globalAttribute);
         ClickstreamAnalytics.recordEvent("testEvent");
         assertEquals(1, dbUtil.getTotalNumber());
+
         try (Cursor cursor = dbUtil.queryAllEvents()) {
             cursor.moveToFirst();
             String eventString = cursor.getString(2);
@@ -750,15 +755,23 @@ public class IntegrationTest {
      */
     @Test
     public void testEnableAndDisableSDKNotInMainThread() throws Exception {
-        Log log = mock(Log.class);
-        ReflectUtil.modifyFiled(plugin, "LOG", log);
+        Log log = LogFactory.getLog(AWSClickstreamPlugin.class);
+        log.setLevel(LogFactory.Level.DEBUG);
+        ByteArrayOutputStream logContent = new ByteArrayOutputStream();
+        PrintStream oldSystemOut = System.out;
+        System.setOut(new PrintStream(logContent));
+
         new Thread(() -> {
             ClickstreamAnalytics.disable();
             ClickstreamAnalytics.enable();
         }).start();
         Thread.sleep(500);
-        verify(log, times(0)).debug("Clickstream SDK enabled");
-        verify(log, times(0)).debug("Clickstream SDK disabled");
+
+        System.setOut(oldSystemOut);
+        assertTrue(
+                logContent.toString().contains("Clickstream SDK disabled failed, please execute in the main thread"));
+        assertTrue(
+                logContent.toString().contains("Clickstream SDK enabled failed, please execute in the main thread"));
     }
 
     /**
@@ -768,12 +781,20 @@ public class IntegrationTest {
      */
     @Test
     public void testEnableSDKTwice() throws Exception {
-        AutoEventSubmitter submitter = (AutoEventSubmitter) ReflectUtil.getFiled(plugin, "autoEventSubmitter");
-        Log log = mock(Log.class);
-        ReflectUtil.modifyFiled(submitter, "LOG", log);
+        AutoEventSubmitter submitter = (AutoEventSubmitter) ReflectUtil.getField(plugin, "autoEventSubmitter");
+
+        Log log = LogFactory.getLog(AutoEventSubmitter.class);
+        log.setLevel(LogFactory.Level.DEBUG);
+        ByteArrayOutputStream logContent = new ByteArrayOutputStream();
+        PrintStream oldSystemOut = System.out;
+        System.setOut(new PrintStream(logContent));
+
         ClickstreamAnalytics.enable();
         ClickstreamAnalytics.enable();
-        verify(log, times(0)).debug("Auto submitting start");
+
+        System.setOut(oldSystemOut);
+        assertFalse(logContent.toString().contains("Auto submitting start"));
+
         ClickstreamAnalytics.recordEvent("testRecordEventWithName");
         assertEquals(1, dbUtil.getTotalNumber());
     }
@@ -785,17 +806,24 @@ public class IntegrationTest {
      */
     @Test
     public void testEnableAfterDisable() throws Exception {
-        AutoEventSubmitter submitter = (AutoEventSubmitter) ReflectUtil.getFiled(plugin, "autoEventSubmitter");
-        Log log = mock(Log.class);
-        ReflectUtil.modifyFiled(submitter, "LOG", log);
+        AutoEventSubmitter submitter = (AutoEventSubmitter) ReflectUtil.getField(plugin, "autoEventSubmitter");
+        Log log = LogFactory.getLog(AutoEventSubmitter.class);
+        log.setLevel(LogFactory.Level.DEBUG);
+        ByteArrayOutputStream logContent = new ByteArrayOutputStream();
+        PrintStream oldSystemOut = System.out;
+        System.setOut(new PrintStream(logContent));
 
         ClickstreamAnalytics.disable();
-        verify(log, atLeastOnce()).debug("Auto submitting stop");
+        System.setOut(oldSystemOut);
+        assertTrue(logContent.toString().contains("Auto submitting stop"));
+
+        System.setOut(new PrintStream(logContent));
         assertEquals(0, dbUtil.getTotalNumber());
         ClickstreamAnalytics.recordEvent("testRecordEventWithName");
         assertEquals(0, dbUtil.getTotalNumber());
         ClickstreamAnalytics.enable();
-        verify(log, atLeastOnce()).debug("Auto submitting start");
+        System.setOut(oldSystemOut);
+        assertTrue(logContent.toString().contains("Auto submitting start"));
         ClickstreamAnalytics.recordEvent("testRecordEventWithName");
         assertEquals(1, dbUtil.getTotalNumber());
     }
@@ -808,7 +836,7 @@ public class IntegrationTest {
     @Test
     public void testDisableAppLifecycle() throws Exception {
         ActivityLifecycleManager lifecycleManager =
-            (ActivityLifecycleManager) ReflectUtil.getFiled(plugin, "activityLifecycleManager");
+            (ActivityLifecycleManager) ReflectUtil.getField(plugin, "activityLifecycleManager");
         LifecycleRegistry lifecycle = new LifecycleRegistry(mock(LifecycleOwner.class));
         lifecycleManager.startLifecycleTracking(application, lifecycle);
 
@@ -829,7 +857,7 @@ public class IntegrationTest {
     @Test
     public void testDisableAndEnableActivityLifecycle() throws Exception {
         ActivityLifecycleManager lifecycleManager =
-            (ActivityLifecycleManager) ReflectUtil.getFiled(plugin, "activityLifecycleManager");
+            (ActivityLifecycleManager) ReflectUtil.getField(plugin, "activityLifecycleManager");
         ClickstreamAnalytics.disable();
         verify(application, atLeastOnce()).unregisterActivityLifecycleCallbacks(lifecycleManager);
         ClickstreamAnalytics.enable();
@@ -841,10 +869,10 @@ public class IntegrationTest {
      * @throws Exception exception
      */
     private void setRequestPathToFail() throws Exception {
-        ClickstreamContext context = (ClickstreamContext) ReflectUtil.getFiled(eventRecorder, "clickstreamContext");
+        ClickstreamContext context = (ClickstreamContext) ReflectUtil.getField(eventRecorder, "clickstreamContext");
         ClickstreamConfiguration config =
-            (ClickstreamConfiguration) ReflectUtil.getFiled(context, "clickstreamConfiguration");
-        ReflectUtil.modifyFiled(config, "endpoint", assembleEndpointUrl(COLLECT_FAIL));
+            (ClickstreamConfiguration) ReflectUtil.getField(context, "clickstreamConfiguration");
+        ReflectUtil.modifyField(config, "endpoint", assembleEndpointUrl(COLLECT_FAIL));
     }
 
     private String assembleEndpointUrl(String path) {
@@ -873,8 +901,8 @@ public class IntegrationTest {
             mockHandler(handler);
             AutoEventSubmitter submitter = null;
             try {
-                submitter = (AutoEventSubmitter) ReflectUtil.getFiled(plugin, "autoEventSubmitter");
-                ReflectUtil.modifyFiled(submitter, "handler", handler);
+                submitter = (AutoEventSubmitter) ReflectUtil.getField(plugin, "autoEventSubmitter");
+                ReflectUtil.modifyField(submitter, "handler", handler);
             } catch (Exception exception) {
                 exception.printStackTrace();
             }
@@ -889,12 +917,12 @@ public class IntegrationTest {
      * @throws Exception exception
      */
     private void stopThreadSafely() throws Exception {
-        AutoEventSubmitter submitter = (AutoEventSubmitter) ReflectUtil.getFiled(plugin, "autoEventSubmitter");
-        ReflectUtil.modifyFiled(submitter, "handler", mock(Handler.class));
+        AutoEventSubmitter submitter = (AutoEventSubmitter) ReflectUtil.getField(plugin, "autoEventSubmitter");
+        ReflectUtil.modifyField(submitter, "handler", mock(Handler.class));
     }
 
     private void setHttpRequestTimeOut(long timeOutSecond) throws Exception {
-        ReflectUtil.modifyFiled(ClickstreamAnalytics.getClickStreamConfiguration(), "callTimeOut", timeOutSecond);
+        ReflectUtil.modifyField(ClickstreamAnalytics.getClickStreamConfiguration(), "callTimeOut", timeOutSecond);
     }
 
     /**
@@ -910,9 +938,9 @@ public class IntegrationTest {
         stopThreadSafely();
         ClickstreamAnalytics.getClickStreamConfiguration().withCustomDns(null);
         Map<String, Object> globalAttribute =
-            (Map<String, Object>) ReflectUtil.getFiled(analyticsClient, "globalAttributes");
-        ReflectUtil.modifyFiled(analyticsClient, "simpleUserAttributes", new JSONObject());
-        ReflectUtil.modifyFiled(analyticsClient, "allUserAttributes", new JSONObject());
+            (Map<String, Object>) ReflectUtil.getField(analyticsClient, "globalAttributes");
+        ReflectUtil.modifyField(analyticsClient, "simpleUserAttributes", new JSONObject());
+        ReflectUtil.modifyField(analyticsClient, "allUserAttributes", new JSONObject());
         globalAttribute.clear();
         ReflectUtil.makeAmplifyNotConfigured();
     }

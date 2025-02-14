@@ -19,10 +19,12 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.io.Serializable;
+
 /**
  * Clickstream Database Helper.
  */
-public class ClickstreamDatabaseHelper extends SQLiteOpenHelper {
+public class ClickstreamDatabaseHelper extends SQLiteOpenHelper implements Serializable {
     private static final String DATABASE_NAME = "clickstream.db";
     private static final int DATABASE_VERSION = 1;
 

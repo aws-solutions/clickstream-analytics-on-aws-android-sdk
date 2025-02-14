@@ -32,6 +32,7 @@ public final class PreferencesUtil {
     private static final Log LOG = LogFactory.getLog(PreferencesUtil.class);
     private static final String USER_ATTRIBUTE = "clickstream_user_attributes";
     private static final String USER_ID = "clickstream_user_id";
+    private static final String USER_UNIQUE_ID = "user_unique_id";
     private static final String USER_UNIQUE_ID_MAP = "clickstream_user_unique_id";
     private static final String CURRENT_USER_UNIQUE_ID = "clickstream_current_user_unique_id";
     private static final String CURRENT_USER_FIRST_TOUCH_TIMESTAMP = "clickstream_current_user_first_touch_timestamp";
@@ -109,18 +110,18 @@ public final class PreferencesUtil {
             userUniqueIdObject = new JSONObject(userUniqueIdJsonString);
             if (userUniqueIdObject.length() == 0) {
                 // first new user login need to associate the userId and exist user uniqueId and save it to preferences.
-                userInfo.put("user_unique_id", getCurrentUserUniqueId(preferences));
+                userInfo.put(USER_UNIQUE_ID, getCurrentUserUniqueId(preferences));
                 userInfo.put("user_first_touch_timestamp", getCurrentUserFirstTouchTimestamp(preferences));
                 userUniqueIdObject.put(userId, userInfo);
                 preferences.putString(USER_UNIQUE_ID_MAP, userUniqueIdObject.toString());
             } else if (userUniqueIdObject.has(userId)) {
                 // switch to old user.
                 userInfo = userUniqueIdObject.getJSONObject(userId);
-                setCurrentUserUniqueId(preferences, userInfo.getString("user_unique_id"));
+                setCurrentUserUniqueId(preferences, userInfo.getString(USER_UNIQUE_ID));
             } else {
                 // switch to new user.
                 String userUniqueId = UUID.randomUUID().toString();
-                userInfo.put("user_unique_id", userUniqueId);
+                userInfo.put(USER_UNIQUE_ID, userUniqueId); //NOSONAR
                 userInfo.put("user_first_touch_timestamp", System.currentTimeMillis());
                 setCurrentUserUniqueId(preferences, userUniqueId);
                 userUniqueIdObject.put(userId, userInfo);

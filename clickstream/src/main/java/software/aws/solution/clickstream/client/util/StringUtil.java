@@ -52,7 +52,7 @@ public final class StringUtil {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
              GZIPOutputStream gzip = new GZIPOutputStream(baos)) {
             gzip.write(ungzipStr.getBytes());
-            gzip.close();
+            gzip.close(); //NOSONAR
             encode = baos.toByteArray();
             baos.flush();
         } catch (UnsupportedEncodingException uee) {

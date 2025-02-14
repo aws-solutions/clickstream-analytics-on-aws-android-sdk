@@ -21,6 +21,7 @@ import android.net.Uri;
 import androidx.test.core.app.ApplicationProvider;
 
 import com.amazonaws.logging.Log;
+import com.amazonaws.logging.LogFactory;
 import com.github.dreamhead.moco.HttpServer;
 import com.github.dreamhead.moco.Runner;
 import org.json.JSONArray;
@@ -45,6 +46,8 @@ import software.aws.solution.clickstream.client.network.NetRequest;
 import software.aws.solution.clickstream.client.util.StringUtil;
 import software.aws.solution.clickstream.util.ReflectUtil;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -67,8 +70,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
@@ -131,8 +132,10 @@ public class EventRecorderTest {
         // Using reflection to get the method
         eventRecorder =
             (EventRecorder) ReflectUtil.newInstance(EventRecorder.class, clickstreamContext, dbUtil, executorService);
-        log = mock(Log.class);
-        ReflectUtil.modifyFiled(eventRecorder, "LOG", log);
+
+        log = LogFactory.getLog(EventRecorder.class);
+        log.setLevel(LogFactory.Level.DEBUG);
+
         assertEquals(3, dbUtil.getTotalNumber());
         dbUtil.deleteBatchEvents(3);
     }
@@ -383,6 +386,11 @@ public class EventRecorderTest {
     @Test
     public void testProcessEventNearReachMaxSubmissions() throws Exception {
         setRequestPath(COLLECT_SUCCESS);
+
+        ByteArrayOutputStream logContent = new ByteArrayOutputStream();
+        PrintStream oldSystemOut = System.out;
+        System.setOut(new PrintStream(logContent));
+
         for (int i = 0; i < 40; i++) {
             event.addAttribute("test_json_" + i, jsonString);
         }
@@ -392,8 +400,13 @@ public class EventRecorderTest {
         assertEquals(20, dbUtil.getTotalNumber());
         int eventNumber = (int) ReflectUtil.invokeMethod(eventRecorder, "processEvents");
         assertEquals(20, eventNumber);
-        verify(log).debug("Send event number: 12");
-        verify(log).debug("Send event number: 8");
+
+        System.setOut(oldSystemOut);
+        System.out.println(">>>>>>>\n" + logContent.toString() + "<<<<<<<\n");
+        assertTrue(logContent.toString().contains("Send event number: 12"));
+        assertTrue(
+                "Debug log contains \"Send event number: 9\"",
+                logContent.toString().contains("Send event number: 8"));
         assertEquals(0, dbUtil.getTotalNumber());
 
     }
@@ -406,6 +419,11 @@ public class EventRecorderTest {
     @Test
     public void testProcessEventReachedMaxSubmissions() throws Exception {
         setRequestPath(COLLECT_SUCCESS);
+
+        ByteArrayOutputStream logContent = new ByteArrayOutputStream();
+        PrintStream oldSystemOut = System.out;
+        System.setOut(new PrintStream(logContent));
+
         for (int i = 0; i < 40; i++) {
             event.addAttribute("test_json_" + i, jsonString);
         }
@@ -415,8 +433,11 @@ public class EventRecorderTest {
         assertEquals(40, dbUtil.getTotalNumber());
         int eventNumber = (int) ReflectUtil.invokeMethod(eventRecorder, "processEvents");
         assertEquals(36, eventNumber);
-        verify(log, times(3)).debug("Send event number: 12");
-        verify(log).debug("Reached maxSubmissions: 3");
+
+        System.setOut(oldSystemOut);
+        assertTrue(logContent.toString().contains("Send event number: 12"));
+        assertTrue(logContent.toString().contains("Reached maxSubmissions: 3"));
+
         assertEquals(4, dbUtil.getTotalNumber());
     }
 
@@ -446,6 +467,11 @@ public class EventRecorderTest {
     @Test
     public void testSubmitPartOfEventForMultiRequest() throws Exception {
         setRequestPath(COLLECT_SUCCESS);
+
+        ByteArrayOutputStream logContent = new ByteArrayOutputStream();
+        PrintStream oldSystemOut = System.out;
+        System.setOut(new PrintStream(logContent));
+
         for (int i = 0; i < 40; i++) {
             event.addAttribute("test_json_" + i, jsonString);
         }
@@ -455,9 +481,13 @@ public class EventRecorderTest {
         assertEquals(40, dbUtil.getTotalNumber());
         eventRecorder.submitEvents();
         assertEquals(1, ((ThreadPoolExecutor) executorService).getTaskCount());
+
         Thread.sleep(2000);
-        verify(log, times(3)).debug("Send event number: 12");
-        verify(log).debug("Reached maxSubmissions: 3");
+
+        System.setOut(oldSystemOut);
+        assertTrue(logContent.toString().contains("Send event number: 12"));
+        assertTrue(logContent.toString().contains("Reached maxSubmissions: 3"));
+
         assertEquals(4, dbUtil.getTotalNumber());
     }
 
@@ -469,6 +499,11 @@ public class EventRecorderTest {
     @Test
     public void testSubmitAllEventForMultiRequest() throws Exception {
         setRequestPath(COLLECT_SUCCESS);
+
+        ByteArrayOutputStream logContent = new ByteArrayOutputStream();
+        PrintStream oldSystemOut = System.out;
+        System.setOut(new PrintStream(logContent));
+
         for (int i = 0; i < 40; i++) {
             event.addAttribute("test_json_" + i, jsonString);
         }
@@ -481,9 +516,12 @@ public class EventRecorderTest {
         assertEquals(2, ((ThreadPoolExecutor) executorService).getTaskCount());
         assertTrue(((ThreadPoolExecutor) executorService).getActiveCount() < 2);
         Thread.sleep(2000);
-        verify(log, times(3)).debug("Send event number: 12");
-        verify(log).debug("Reached maxSubmissions: 3");
-        verify(log).debug("Send event number: 4");
+
+        System.setOut(oldSystemOut);
+        assertTrue(logContent.toString().contains("Send event number: 12"));
+        assertTrue(logContent.toString().contains("Reached maxSubmissions: 3"));
+        assertTrue(logContent.toString().contains("Send event number: 4"));
+
         assertEquals(0, dbUtil.getTotalNumber());
     }
 
@@ -496,6 +534,11 @@ public class EventRecorderTest {
     @Test
     public void testTimerThreeTimesSubmitAllEventForMultiRequest() throws Exception {
         setRequestPath(COLLECT_SUCCESS);
+
+        ByteArrayOutputStream logContent = new ByteArrayOutputStream();
+        PrintStream oldSystemOut = System.out;
+        System.setOut(new PrintStream(logContent));
+
         for (int i = 0; i < 40; i++) {
             event.addAttribute("test_json_" + i, jsonString);
         }
@@ -508,9 +551,12 @@ public class EventRecorderTest {
             eventRecorder.submitEvents();
         }
         Thread.sleep(2000);
-        verify(log, times(3)).debug("Send event number: 12");
-        verify(log).debug("Reached maxSubmissions: 3");
-        verify(log).debug("Send event number: 4");
+
+        System.setOut(oldSystemOut);
+        assertTrue(logContent.toString().contains("Send event number: 12"));
+        assertTrue(logContent.toString().contains("Reached maxSubmissions: 3"));
+        assertTrue(logContent.toString().contains("Send event number: 4"));
+
         assertEquals(0, dbUtil.getTotalNumber());
     }
 
@@ -575,13 +621,21 @@ public class EventRecorderTest {
      */
     @Test
     public void testSaveEventFailedAndWillSendEventImmediately() throws Exception {
+        ByteArrayOutputStream logContent = new ByteArrayOutputStream();
+        PrintStream oldSystemOut = System.out;
+        System.setOut(new PrintStream(logContent));
+
         dbUtil = mock(ClickstreamDBUtil.class);
-        ReflectUtil.modifyFiled(eventRecorder, "dbUtil", dbUtil);
+        ReflectUtil.modifyField(eventRecorder, "dbUtil", dbUtil);
         when(dbUtil.saveEvent(event)).thenReturn(null);
         eventRecorder.recordEvent(event);
-        verify(log).error("Error to save event with EventType: testEvent");
+
+        System.setOut(oldSystemOut);
+        assertTrue(logContent.toString().contains("Error to save event with EventType: testEvent"));
+
         Thread.sleep(1500);
-        int bundleSequenceId = (int) ReflectUtil.getFiled(eventRecorder, "bundleSequenceId");
+
+        int bundleSequenceId = (int) ReflectUtil.getField(eventRecorder, "bundleSequenceId");
         assertTrue(bundleSequenceId > 1);
     }
 
@@ -592,10 +646,10 @@ public class EventRecorderTest {
      * @throws Exception exception
      */
     private void setRequestPath(String path) throws Exception {
-        ClickstreamContext context = (ClickstreamContext) ReflectUtil.getFiled(eventRecorder, "clickstreamContext");
+        ClickstreamContext context = (ClickstreamContext) ReflectUtil.getField(eventRecorder, "clickstreamContext");
         ClickstreamConfiguration config =
-            (ClickstreamConfiguration) ReflectUtil.getFiled(context, "clickstreamConfiguration");
-        ReflectUtil.modifyFiled(config, "endpoint", "http://localhost:8082" + path);
+            (ClickstreamConfiguration) ReflectUtil.getField(context, "clickstreamConfiguration");
+        ReflectUtil.modifyField(config, "endpoint", "http://localhost:8082" + path);
     }
 
     /**

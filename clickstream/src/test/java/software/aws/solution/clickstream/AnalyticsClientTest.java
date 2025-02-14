@@ -75,8 +75,8 @@ public class AnalyticsClientTest {
         ClickstreamManager clickstreamManager = new ClickstreamManager(context, configuration);
         analyticsClient = clickstreamManager.getAnalyticsClient();
 
-        globalAttributes = (Map<String, Object>) ReflectUtil.getFiled(analyticsClient, "globalAttributes");
-        allUserAttributes = (JSONObject) ReflectUtil.getFiled(analyticsClient, "allUserAttributes");
+        globalAttributes = (Map<String, Object>) ReflectUtil.getField(analyticsClient, "globalAttributes");
+        allUserAttributes = (JSONObject) ReflectUtil.getField(analyticsClient, "allUserAttributes");
 
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 21; i++) {
@@ -365,7 +365,7 @@ public class AnalyticsClientTest {
                 .withEndpoint("http://example.com/collect")
         );
         JSONObject userAttributesFromStorage =
-            (JSONObject) ReflectUtil.getFiled(clickstreamManager.getAnalyticsClient(), "allUserAttributes");
+            (JSONObject) ReflectUtil.getField(clickstreamManager.getAnalyticsClient(), "allUserAttributes");
         Assert.assertEquals(6, userAttributesFromStorage.length());
         Assert.assertEquals("carl", ((JSONObject) userAttributesFromStorage.get("user_name")).getString("value"));
         Assert.assertEquals("10837409", ((JSONObject) userAttributesFromStorage.get("_user_id")).getString("value"));
@@ -385,12 +385,12 @@ public class AnalyticsClientTest {
      */
     @Test
     public void testInitialValueInAnalyticsClient() throws Exception {
-        String userId = (String) ReflectUtil.getFiled(analyticsClient, "userId");
-        String userUniqueId = (String) ReflectUtil.getFiled(analyticsClient, "userUniqueId");
+        String userId = (String) ReflectUtil.getField(analyticsClient, "userId");
+        String userUniqueId = (String) ReflectUtil.getField(analyticsClient, "userUniqueId");
         Assert.assertEquals("", userId);
         Assert.assertNotNull(userUniqueId);
 
-        allUserAttributes = (JSONObject) ReflectUtil.getFiled(analyticsClient, "allUserAttributes");
+        allUserAttributes = (JSONObject) ReflectUtil.getField(analyticsClient, "allUserAttributes");
         Assert.assertTrue(allUserAttributes.has(Event.ReservedAttribute.USER_FIRST_TOUCH_TIMESTAMP));
     }
 
@@ -402,13 +402,13 @@ public class AnalyticsClientTest {
     @Test
     public void testUpdateSameUserIdTwice() throws Exception {
         String userIdForA = "aaa";
-        String userUniqueId = (String) ReflectUtil.getFiled(analyticsClient, "userUniqueId");
+        String userUniqueId = (String) ReflectUtil.getField(analyticsClient, "userUniqueId");
         analyticsClient.updateUserId(userIdForA);
         analyticsClient.addUserAttribute("user_age", 12);
         analyticsClient.updateUserId(userIdForA);
-        allUserAttributes = (JSONObject) ReflectUtil.getFiled(analyticsClient, "allUserAttributes");
+        allUserAttributes = (JSONObject) ReflectUtil.getField(analyticsClient, "allUserAttributes");
         Assert.assertTrue(allUserAttributes.has("user_age"));
-        Assert.assertEquals(userUniqueId, ReflectUtil.getFiled(analyticsClient, "userUniqueId"));
+        Assert.assertEquals(userUniqueId, ReflectUtil.getField(analyticsClient, "userUniqueId"));
     }
 
     /**
@@ -420,13 +420,13 @@ public class AnalyticsClientTest {
     public void testUpdateDifferentUserId() throws Exception {
         String userIdForA = "aaa";
         String userIdForB = "bbb";
-        String userUniqueId = (String) ReflectUtil.getFiled(analyticsClient, "userUniqueId");
+        String userUniqueId = (String) ReflectUtil.getField(analyticsClient, "userUniqueId");
         analyticsClient.updateUserId(userIdForA);
         analyticsClient.addUserAttribute("user_age", 12);
         analyticsClient.updateUserId(userIdForB);
-        allUserAttributes = (JSONObject) ReflectUtil.getFiled(analyticsClient, "allUserAttributes");
+        allUserAttributes = (JSONObject) ReflectUtil.getField(analyticsClient, "allUserAttributes");
         Assert.assertFalse(allUserAttributes.has("user_age"));
-        Assert.assertNotEquals(userUniqueId, ReflectUtil.getFiled(analyticsClient, "userUniqueId"));
+        Assert.assertNotEquals(userUniqueId, ReflectUtil.getField(analyticsClient, "userUniqueId"));
     }
 
     /**
@@ -438,14 +438,14 @@ public class AnalyticsClientTest {
     public void testChangeToOriginUserId() throws Exception {
         String userIdForA = "aaa";
         String userIdForB = "bbb";
-        String userUniqueId = (String) ReflectUtil.getFiled(analyticsClient, "userUniqueId");
+        String userUniqueId = (String) ReflectUtil.getField(analyticsClient, "userUniqueId");
         analyticsClient.updateUserId(userIdForA);
         analyticsClient.updateUserId(userIdForB);
-        String userUniqueIdForB = (String) ReflectUtil.getFiled(analyticsClient, "userUniqueId");
+        String userUniqueIdForB = (String) ReflectUtil.getField(analyticsClient, "userUniqueId");
         analyticsClient.updateUserId(userIdForA);
-        Assert.assertEquals(userUniqueId, ReflectUtil.getFiled(analyticsClient, "userUniqueId"));
+        Assert.assertEquals(userUniqueId, ReflectUtil.getField(analyticsClient, "userUniqueId"));
         analyticsClient.updateUserId(userIdForB);
-        Assert.assertEquals(userUniqueIdForB, ReflectUtil.getFiled(analyticsClient, "userUniqueId"));
+        Assert.assertEquals(userUniqueIdForB, ReflectUtil.getField(analyticsClient, "userUniqueId"));
     }
 
 

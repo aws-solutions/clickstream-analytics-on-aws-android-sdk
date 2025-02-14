@@ -40,6 +40,7 @@ public class SharedPrefsDeviceIdService {
      * Uses Shared prefs to recall and store the unique ID.
      */
     public SharedPrefsDeviceIdService() {
+        // Creates a new SharedPrefsDeviceIdService instance with default values.
     }
 
     /**

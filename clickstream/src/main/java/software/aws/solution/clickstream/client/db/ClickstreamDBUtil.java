@@ -26,10 +26,12 @@ import com.amazonaws.logging.LogFactory;
 import software.aws.solution.clickstream.client.AnalyticsEvent;
 import software.aws.solution.clickstream.client.EventRecorder;
 
+import java.io.Serializable;
+
 /**
  * Clickstream Database Util.
  */
-public class ClickstreamDBUtil {
+public class ClickstreamDBUtil implements Serializable {
     private static final Log LOG = LogFactory.getLog(EventRecorder.class);
 
     /**

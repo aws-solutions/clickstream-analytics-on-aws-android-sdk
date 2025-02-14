@@ -20,6 +20,7 @@ import androidx.annotation.NonNull;
 import software.aws.solution.clickstream.client.util.PreferencesUtil;
 import software.aws.solution.clickstream.client.util.StringUtil;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -31,7 +32,7 @@ import java.util.TimeZone;
  * status of it's stop time. A session's stop time is only set when the session
  * has been paused.
  */
-public final class Session {
+public final class Session implements Serializable {
     /**
      * The session ID date format.
      */

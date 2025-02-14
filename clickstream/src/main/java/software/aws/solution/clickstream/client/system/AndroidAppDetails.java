@@ -24,11 +24,14 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import com.amazonaws.logging.Log;
 import com.amazonaws.logging.LogFactory;
 
+import java.io.Serializable;
+
 /**
  * Android App Details.
  */
-public class AndroidAppDetails {
+public class AndroidAppDetails implements Serializable {
     private static final Log LOG = LogFactory.getLog(AndroidAppDetails.class);
+    private static final String UNKNOWN = "Unknown";
     private String appTitle;
     private String packageName;
     private String versionName;
@@ -54,9 +57,9 @@ public class AndroidAppDetails {
         } catch (NameNotFoundException nameNotFoundException) {
             LOG.warn("Unable to get details for package " +
                 applicationContext.getPackageName());
-            appTitle = "Unknown";
-            packageName = "Unknown";
-            versionName = "Unknown";
+            appTitle = UNKNOWN;
+            packageName = UNKNOWN;
+            versionName = UNKNOWN;
         }
     }
 

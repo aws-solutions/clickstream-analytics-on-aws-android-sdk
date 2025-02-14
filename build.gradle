@@ -13,47 +13,38 @@
  * permissions and limitations under the License.
  */
 
-buildscript {
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.2'
-    }
+plugins {
+    id 'java'
+    id 'jacoco'
 }
 
 allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
+        gradlePluginPortal()
     }
 }
 
-task clean(type: Delete) {
+clean {
     delete rootProject.buildDir
     delete "clickstream/build/"
 }
 
 
 ext {
-    buildToolsVersion = "30.0.2"
-    compileSdkVersion = 30
-    minSdkVersion = 16
-    targetSdkVersion = 30
-    awsSdkVersion = '2.51.0'
+    compileSdkVersion = 34
+    minSdkVersion = 19
+    targetSdkVersion = 34
+    awsSdkVersion = '2.59.1'
     amplifySdkVersion = '1.38.8'
-    lifecycleVersion = "2.6.1"
+    lifecycleVersion = "2.8.7"
     dependency = [
         android: [
             desugartools: 'com.android.tools:desugar_jdk_libs:1.0.9',
         ],
         androidx: [
-            test: 'androidx.test:core:1.5.0',
+            test: 'androidx.test:core:1.6.1',
             lifecycle_common: "androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion",
             lifecycle_process: "androidx.lifecycle:lifecycle-process:$lifecycleVersion",
         ],
@@ -63,12 +54,12 @@ ext {
         aws: [
             mobileclient: "com.amazonaws:aws-android-sdk-mobile-client:$awsSdkVersion"
         ],
-        okhttp: 'com.squareup.okhttp3:okhttp:4.9.1',
+        okhttp: 'com.squareup.okhttp3:okhttp:4.12.0',
         junit: 'junit:junit:4.13.2',
-        mockito: 'org.mockito:mockito-core:4.11.0',
+        mockito: 'org.mockito:mockito-core:5.14.2',
         mockitoinline: 'org.mockito:mockito-inline:4.11.0',
         moco: 'com.github.dreamhead:moco-core:1.4.0',
-        robolectric: 'org.robolectric:robolectric:4.9.2',
+        robolectric: 'org.robolectric:robolectric:4.14',
     ]
 }
 
@@ -82,7 +73,6 @@ subprojects { project ->
 
 private void configAndroidLibrary(Project project) {
     project.android {
-        buildToolsVersion rootProject.ext.buildToolsVersion
         compileSdkVersion rootProject.ext.compileSdkVersion
 
         defaultConfig {
@@ -108,8 +98,8 @@ private void configAndroidLibrary(Project project) {
 
         compileOptions {
             coreLibraryDesugaringEnabled true
-            sourceCompatibility JavaVersion.VERSION_1_8
-            targetCompatibility JavaVersion.VERSION_1_8
+            sourceCompatibility JavaVersion.VERSION_21
+            targetCompatibility JavaVersion.VERSION_21
         }
     }
     project.dependencies {

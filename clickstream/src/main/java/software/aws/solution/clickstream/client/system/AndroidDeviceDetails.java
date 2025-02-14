@@ -17,14 +17,16 @@ package software.aws.solution.clickstream.client.system;
 
 import android.os.Build;
 
+import java.io.Serializable;
 import java.util.Locale;
 
 /**
  * Android Device Details.
  */
-public class AndroidDeviceDetails {
+public class AndroidDeviceDetails implements Serializable {
 
     private final String carrier;
+    private final String platform = "Android"; // NOSONAR
 
     /**
      * The construct function with parameters.
@@ -59,7 +61,7 @@ public class AndroidDeviceDetails {
      * @return The name of platform.
      */
     public String platform() {
-        return "Android";
+        return platform;
     }
 
     /**
